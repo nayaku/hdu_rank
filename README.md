@@ -2,6 +2,10 @@
 
 HDU_Rank是一款基于基于Flask、Vue.js和BootstrapVue的杭电刷题排行榜爬虫。
 
+DEMO页面：
+
+![demo_img](demo_img.png)
+
 注意：由于本项目中使用到了Python3的uWSGI库，因此只能运行在Linux平台上面。
 
 # 快速入门
