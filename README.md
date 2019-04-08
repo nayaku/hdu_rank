@@ -1,28 +1,57 @@
-PIP库
+# 说明
 
-flask pymysql requests
+HDU_Rank是一款基于基于Flask、Vue.js和BootstrapVue的杭电刷题排行榜爬虫。
 
-**解决方案：**
+注意：由于本项目中使用到了Python3的uWSGI库，因此只能运行在Linux平台上面。
 
-增加用户和组，具体命令如下：
+# 快速入门
 
-```ini
+```shell
+# 安装Python3（如果已经安装可以跳过）
+wget https://www.python.org/ftp/python/3.7.3/Python-3.7.3.tgz
+tar -zxvf Python-3.7.3.tgz
+cd Python-3.7.3.tgz
+./configure
+make && make install
+
+# 安装LNMP环境（如果已经安装可以跳过）
+wget http://soft.vpser.net/lnmp/lnmp1.6beta.tar.gz
+tar -zxvf lnmp1.6beta.tar.gz
+cd lnmp1.6beta
+./install.sh
+# 其中MySQL版本建议选择MySQL8，其余根据需求选择
+
+# 安装screen和git（如果已经安装可以跳过）
+yum install screen git vim
+# 安装所需的PIP库
+pip3 install flask pymysql requests uWSGI
+# 增加hdurank的用户名和组
 /usr/sbin/groupadd hdurank
-
 /usr/sbin/useradd -g hdurank hdurank
+# 克隆本项目
+git clone https://github.com/736248591/hdu_rank.git
+# 建立数据库
+cd hdu_rank
+mysql -u你的数据库用户名 -p你的数据库密码 < hdu_rank.sql
+# 新建域名
+lnmp vhost add
+# 按照提示填写你的域名和项目本地存放的地址。注意，网站的根目录填写的是hdu_rank/static
+# 编辑NGINX的配置
+vim /usr/local/nginx/conf/vhost/你的域名.conf
+# 在server的子级location的同级加入以下内容。
+location ~* /api/{
+    include  uwsgi_params;
+    uwsgi_pass  127.0.0.1:5007;
+    client_max_body_size 35m;
+}
+# 开启新的一个screen，这样在关闭终端以后程序不会被关闭
+screen -R hdu_rank
+# 启动服务器
+uwsgi --ini uwsgi.ini 
 ```
+# 进阶开发
 
-增加了www的用户名和组，之后修改uWsgi配置文件：
-
-```ini
-[uwsgi]
-
-uid = hdurank
-
-gid = hdurank
-```
-
-# API接口
+## API接口
 
 - ### /api/get_rank 获取排行榜
 **参数：** （无）
@@ -157,4 +186,10 @@ gid = hdurank
       "mgs": 错误原因 (当状态为false时，拥有这个字段）string
       “crawl_status”： 爬虫状态 union("runable","running","sleeping","stopped")
   }
+```
+## 手动编译客户端
+安装Node.js和Yarn
+```shell
+cd hdu_rank
+yarn
 ```
