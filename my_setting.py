@@ -18,8 +18,6 @@ DB_PASSWORD = 'hr@hr'
 DB_NAME = 'hdu_rank'
 # 管理员密码
 ADMIN_PASSWORD = None
-print("载入设置")
-
 
 def read_admin_password() -> None:
     """
@@ -34,9 +32,9 @@ def read_admin_password() -> None:
             print(ADMIN_PASSWORD)
     else:
         with open('admin.key', 'r') as f:
-            ADMIN_PASSWORD = f.read()
+            ADMIN_PASSWORD = f.read().strip()
 
 
 # test
 # if __name__ == '__main__':
-read_admin_password()
+# read_admin_password()

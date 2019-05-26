@@ -5,10 +5,8 @@ from flask import Flask, jsonify, request, session
 import hdu_crawl
 from dao import userDao
 from dao.userDao import create_user, User
-from setting import ADMIN_PASSWORD
-import setting
-
-setting.read_admin_password()
+import my_setting
+my_setting.read_admin_password()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hui1abUIU,W<>Q{}@^T&^$T()(@$!!_H1FBV3VHG.xcdfghSX045D4FG5H51ug44848416'
@@ -66,7 +64,7 @@ def login_admin():
         time_token = int(time.time() / 10)
         print('time:' + str(time_token))
         for i in range(-1, 2, 1):
-            token = str(time_token + i) + ADMIN_PASSWORD + str(time_token + i)
+            token = str(time_token + i) + my_setting.ADMIN_PASSWORD + str(time_token + i)
             m2 = hashlib.sha3_512(token.encode(encoding='utf-8')).hexdigest()
             print('time:' + str(time_token + i))
             print('m2:' + m2)

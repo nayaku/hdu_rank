@@ -1,6 +1,6 @@
 from pymysql import Connection, connect
 
-from setting import *
+from my_setting import *
 
 _connect: Connection = None
 

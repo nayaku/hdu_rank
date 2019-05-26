@@ -57,6 +57,8 @@ location ~* /api/{
 lnmp nginx restart
 # 开启新的一个screen，这样在关闭终端以后程序不会被关闭
 screen -R hdu_rank
+# 创建管理员密码 
+vim admin.key
 # 启动服务器
 uwsgi --ini uwsgi.ini 
 ```
