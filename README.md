@@ -42,6 +42,9 @@ mysql -u你的数据库用户名 -p你的数据库密码 < hdu_rank.sql
 # 新建域名
 lnmp vhost add
 # 按照提示填写你的域名和项目本地存放的地址。注意，网站的根目录填写的是hdu_rank/static
+```
+![vhost_add](vhost_add.jpg)
+```shell
 # 编辑NGINX的配置
 vim /usr/local/nginx/conf/vhost/你的域名.conf
 # 在server的子级location的同级加入以下内容。
