@@ -11,10 +11,12 @@ DEMO页面：
 # 快速入门
 
 ```shell
+# 依赖包
+yum install libffi-devel -y
 # 安装Python3（如果已经安装可以跳过）
 wget https://www.python.org/ftp/python/3.7.3/Python-3.7.3.tgz
 tar -zxvf Python-3.7.3.tgz
-cd Python-3.7.3.tgz
+cd Python-3.7.3
 ./configure
 make && make install
 
@@ -60,7 +62,7 @@ uwsgi --ini uwsgi.ini
 - ### /api/get_rank 获取排行榜
 **参数：** （无）
 **响应数据：**
-```json
+```
   {
       "status": 操作状态 Boolean,
       "msg": 错误原因 (当状态为false时，拥有这个字段）string,
@@ -86,7 +88,7 @@ uwsgi --ini uwsgi.ini
 | account |  string(64)  |        |  账号  |
 |  motto | string(255) |        |   格言   |
 **响应数据：**
-```json
+```
   {
       "status": 操作状态 Boolean,
       "mgs": 错误原因 (当状态为false时，拥有这个字段）string
@@ -100,7 +102,7 @@ uwsgi --ini uwsgi.ini
 | :----: | :------: | :----: | :--------: |
 | id	 |   unsigned int |        | 用户ID  |
 **响应数据：**
-```json
+```
   {
       "status": 操作状态 Boolean,
       "mgs": 错误原因 (当状态为false时，拥有这个字段）string
@@ -115,7 +117,7 @@ uwsgi --ini uwsgi.ini
 | pwd	 |   string |        | 管理员密码<br/>字段=sha3-512(PWD+time%10000+PWD) |
 **响应数据：**
 
-```json
+```
   {
       "status": 操作状态 Boolean,
       "mgs": 错误原因 (当状态为false时，拥有这个字段）string
@@ -126,7 +128,7 @@ uwsgi --ini uwsgi.ini
 **说明：** 清空session。
 **参数：** (无)
 **响应数据：**
-```json
+```
   {
       "status": 操作状态 Boolean,
       "mgs": 错误原因 (当状态为false时，拥有这个字段）string
@@ -141,7 +143,7 @@ uwsgi --ini uwsgi.ini
 | :----: | :------: | :----: | :--------: |
 | id	 |   unsigned int |        | 用户ID  |
 **响应数据：**
-```json
+```
   {
       "status": 操作状态 Boolean,
       "mgs": 错误原因 (当状态为false时，拥有这个字段）string
@@ -151,7 +153,7 @@ uwsgi --ini uwsgi.ini
 - ### /api/get_login_info 获取登录信息
 **参数：** （无）
 **响应数据：**
-```json
+```
   {
       "status": 操作状态 Boolean,
       "mgs": 错误原因 (当状态为false时，拥有这个字段）string,
@@ -163,7 +165,7 @@ uwsgi --ini uwsgi.ini
 **说明：** 必须先登录才能使用该接口。
 **参数：**（无）
 **响应数据：**
-```json
+```
   {
       "status": 操作状态 Boolean,
       "mgs": 错误原因 (当状态为false时，拥有这个字段）string
@@ -174,7 +176,7 @@ uwsgi --ini uwsgi.ini
 **说明：** 必须先登录才能使用该接口。
 **参数：**（无）
 **响应数据：**
-```json
+```
   {
       "status": 操作状态 Boolean,
       "mgs": 错误原因 (当状态为false时，拥有这个字段）string
@@ -184,11 +186,11 @@ uwsgi --ini uwsgi.ini
 - ### /api/crawl_status 爬虫状态
 **参数：**（无）
 **响应数据：**
-```json
+```
   {
       "status": 操作状态 Boolean,
       "mgs": 错误原因 (当状态为false时，拥有这个字段）string
-      “crawl_status”： 爬虫状态 union("runable","running","sleeping","stopped")
+      "crawl_status": 爬虫状态 union("runable","running","sleeping","stopped")
   }
 ```
 ## 手动编译客户端
@@ -197,3 +199,15 @@ uwsgi --ini uwsgi.ini
 cd hdu_rank
 yarn
 ```
+
+## 更新日记
+
+#### 2019年5月26日
+
+升级了依赖包的版本，解决安全隐患。
+
+
+
+#### 2019年4月9日 
+
+1.0 初次发布
