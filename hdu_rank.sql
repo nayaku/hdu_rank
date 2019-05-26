@@ -14,6 +14,9 @@
  Date: 08/04/2019 23:09:41
 */
 
+CREATE DATABASE `hdu_rank` CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci';
+USE hdu_rank;
+
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
