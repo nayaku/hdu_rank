@@ -38,4 +38,4 @@ def read_admin_password() -> None:
 
 # test
 # if __name__ == '__main__':
-    read_admin_password()
+read_admin_password()
