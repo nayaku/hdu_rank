@@ -53,6 +53,8 @@ location ~* /api/{
     uwsgi_pass  127.0.0.1:5007;
     client_max_body_size 35m;
 }
+# 重启nginx服务器
+lnmp nginx restart
 # 开启新的一个screen，这样在关闭终端以后程序不会被关闭
 screen -R hdu_rank
 # 启动服务器
