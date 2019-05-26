@@ -17,7 +17,8 @@ DB_PASSWORD = 'hr@hr'
 # 数据库名称
 DB_NAME = 'hdu_rank'
 # 管理员密码
-ADMIN_PASSWORD = ''
+ADMIN_PASSWORD = None
+print("载入设置")
 
 
 def read_admin_password() -> None:
