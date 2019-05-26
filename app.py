@@ -6,6 +6,7 @@ import hdu_crawl
 from dao import userDao
 from dao.userDao import create_user, User
 from setting import ADMIN_PASSWORD
+import setting
 
 
 app = Flask(__name__)
