@@ -204,7 +204,9 @@ uwsgi --ini uwsgi.ini
 安装Node.js和Yarn
 ```shell
 cd hdu_rank
-yarn
+yarn global add @vue/cli
+yarn install
+yarn build
 ```
 
 ## 更新日记
