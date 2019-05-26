@@ -8,6 +8,7 @@ from dao.userDao import create_user, User
 from setting import ADMIN_PASSWORD
 import setting
 
+setting.read_admin_password()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hui1abUIU,W<>Q{}@^T&^$T()(@$!!_H1FBV3VHG.xcdfghSX045D4FG5H51ug44848416'
