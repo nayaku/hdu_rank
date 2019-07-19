@@ -12,8 +12,6 @@
     "bootstrap-vue": "^2.0.0-rc.20",
     "core-js": "^2.6.0",
     "jssha": "^2.3.0",
-    "tiptap": "^1.19.0",
-    "tiptap-extensions": "^1.20.0",
     "vue": "^2.6.10"
   },
   "devDependencies": {

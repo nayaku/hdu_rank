@@ -9,7 +9,7 @@
         </div>
       </div>
     </div>
-    <div class="py-5">
+    <div class="py-2">
       <div class="container">
         <div class="row">
           <div class="col-md-12">
@@ -51,12 +51,28 @@
                 </tr>
                 </tbody>
               </table>
-              <div class="py-2">
+              <div>
                 <b-button variant="link" @click="addUserModalShow = true">
                   <i class="fa fa-plus fa-fw fa-lg py-1"></i>
                   <span style="font-size:110%">添加账号</span></b-button>
               </div>
+              <div v-if="isAdmin">
+                <b-button variant="link" @click="addNoticeModalShow = true">
+                  <i class="fa fa-plus fa-fw fa-lg py-1"></i>
+                  <span style="font-size:110%">添加公告</span></b-button>
+              </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="py-2">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12">
+            <p style="font-size: x-large;font-weight: bold">
+            {{notice}}
+            </p>
           </div>
         </div>
       </div>
@@ -73,6 +89,7 @@
         </div>
       </div>
     </div>
+    <!-- 添加用户 -->
     <b-modal id="addUserModal" title="添加用户" ok-title="确认" cancel-title="取消" @ok="addUser"
              :ok-disabled="formUserName===''||formAccount===''" v-model="addUserModalShow">
       <form>
@@ -95,146 +112,7 @@
           </div>
         </div>
       </form>
-      <div class="editor">
-        <editor-menu-bar :editor="formMotto">
-          <div class="menubar" slot-scope="{ commands, isActive }">
-
-            <button
-              class="menubar__button"
-              :class="{ 'is-active': isActive.bold() }"
-              @click="commands.bold"
-            >
-              <i class="fa fa-bold" aria-hidden="true"></i>
-            </button>
-
-            <button
-              class="menubar__button"
-              :class="{ 'is-active': isActive.italic() }"
-              @click="commands.italic"
-            >
-              <i class="fa fa-italic" aria-hidden="true"></i>
-            </button>
-
-            <button
-              class="menubar__button"
-              :class="{ 'is-active': isActive.strike() }"
-              @click="commands.strike"
-            >
-              <i class="fa fa-strikethrough" aria-hidden="true"></i>
-            </button>
-
-            <button
-              class="menubar__button"
-              :class="{ 'is-active': isActive.underline() }"
-              @click="commands.underline"
-            >
-              <i class="fa fa-underline" aria-hidden="true"></i>
-            </button>
-
-            <button
-              class="menubar__button"
-              :class="{ 'is-active': isActive.code() }"
-              @click="commands.code"
-            >
-              <i class="fa fa-code" aria-hidden="true"></i>
-            </button>
-
-            <button
-              class="menubar__button"
-              :class="{ 'is-active': isActive.paragraph() }"
-              @click="commands.paragraph"
-            >
-              <i class="fa fa-paragraph" aria-hidden="true"></i>
-            </button>
-
-            <button
-              class="menubar__button"
-              :class="{ 'is-active': isActive.heading({ level: 1 }) }"
-              @click="commands.heading({ level: 1 })"
-            >
-              <i class="fa fa-header" aria-hidden="true"></i>1
-            </button>
-
-            <button
-              class="menubar__button"
-              :class="{ 'is-active': isActive.heading({ level: 2 }) }"
-              @click="commands.heading({ level: 2 })"
-            >
-              <i class="fa fa-header" aria-hidden="true"></i>2
-            </button>
-
-            <button
-              class="menubar__button"
-              :class="{ 'is-active': isActive.heading({ level: 3 }) }"
-              @click="commands.heading({ level: 3 })"
-            >
-              <i class="fa fa-header" aria-hidden="true"></i>3
-            </button>
-
-            <button
-              class="menubar__button"
-              :class="{ 'is-active': isActive.bullet_list() }"
-              @click="commands.bullet_list"
-            >
-              <i class="fa fa-list-ul" aria-hidden="true"></i>
-            </button>
-
-            <button
-              class="menubar__button"
-              :class="{ 'is-active': isActive.ordered_list() }"
-              @click="commands.ordered_list"
-            >
-              <i class="fa fa-list-ol" aria-hidden="true"></i>
-            </button>
-
-            <button
-              class="menubar__button"
-              :class="{ 'is-active': isActive.blockquote() }"
-              @click="commands.blockquote"
-            >
-              <i class="fa fa-quote-right" aria-hidden="true"></i>
-            </button>
-
-            <button
-              class="menubar__button"
-              :class="{ 'is-active': isActive.code_block() }"
-              @click="commands.code_block"
-            >
-              <i class="fa fa-code" aria-hidden="true"></i>
-            </button>
-
-            <button
-              class="menubar__button"
-              @click="commands.horizontal_rule"
-            >
-              —
-            </button>
-
-            <button
-              class="menubar__button"
-              @click="commands.undo"
-            >
-              <i class="fa fa-undo" aria-hidden="true"></i>
-            </button>
-
-            <button
-              class="menubar__button"
-              @click="commands.redo"
-            >
-              <i class="fa fa-repeat" aria-hidden="true"></i>
-            </button>
-
-          </div>
-        </editor-menu-bar>
-
-        <editor-content class="editor__content" :editor="formMotto"/>
-      </div>
-      <!--      <div slot="modal-footer">-->
-      <!--        <b-button variant="primary" :disabled="formUserName&&formAccount">确认</b-button>-->
-      <!--        <button variant="secondary">取消</button>-->
-      <!--        <button type="button" class="btn btn-primary">确认</button>-->
-      <!--        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>-->
-      <!--      </div>-->
+      <b-form-textarea v-model="formMotto" rows="3"></b-form-textarea>
     </b-modal>
     <!-- 管理员登录弹窗 -->
     <b-modal id="adminLoginModal" title="管理员登录" ok-title="确认" cancel-title="取消" @ok="adminLogin"
@@ -254,37 +132,20 @@
              @cancel="msgCancelCallback" :ok-only="msgOkOnly" v-model="msgVisible">
       <p :class="msgClass" v-html="msg"></p>
     </b-modal>
+    <!-- 添加公告 -->
+    <b-modal id="addNoticeModal" title="添加公告" ok-title="确认" cancel-title="取消" @ok="addNotice"
+             v-model="addNoticeModalShow">
+      <b-form-textarea v-model="newNotice" rows="3"></b-form-textarea>
+    </b-modal>
   </div>
 </template>
 
 <script>
-  import { Editor, EditorContent, EditorMenuBar } from 'tiptap'
-  import {
-    Blockquote,
-    CodeBlock,
-    HardBreak,
-    Heading,
-    HorizontalRule,
-    OrderedList,
-    BulletList,
-    ListItem,
-    TodoItem,
-    TodoList,
-    Bold,
-    Code,
-    Italic,
-    Link,
-    Strike,
-    Underline,
-    History
-  } from 'tiptap-extensions'
 
   let SHA = require('jssha')
 
   export default {
     components: {
-      EditorContent,
-      EditorMenuBar
     },
     name: 'app',
     data () {
@@ -294,28 +155,7 @@
         users: [],
         formUserName: '',
         formAccount: '',
-        formMotto: new Editor({
-          extensions: [
-            new Blockquote(),
-            new BulletList(),
-            new CodeBlock(),
-            new HardBreak(),
-            new Heading({ levels: [1, 2, 3] }),
-            new HorizontalRule(),
-            new ListItem(),
-            new OrderedList(),
-            new TodoItem(),
-            new TodoList(),
-            new Bold(),
-            new Code(),
-            new Italic(),
-            new Link(),
-            new Strike(),
-            new Underline(),
-            new History()
-          ],
-          content: '<p>这家伙很懒，什么都没写</p>'
-        }),
+        formMotto: '',
         msg: '',
         msgClass: '',
         msgTitle: '',
@@ -327,7 +167,10 @@
         msgVisible: false,
         adminPwd: '',
         adminLoginModalShow: false,
-        addUserModalShow: false
+        addUserModalShow: false,
+        notice: '',
+        newNotice: '',
+        addNoticeModalShow: false
       }
     },
     methods: {
@@ -336,15 +179,15 @@
           console.log(resp)
           if (resp['status']) {
             this.users = resp['users']
+            this.notice = resp['notice']
           }
         })
       },
       addUser () {
-        console.log(this.formMotto.getHTML())
         let params = {
           name: this.formUserName,
           account: this.formAccount,
-          motto: this.formMotto.getHTML()
+          motto: this.formMotto
         }
         this.$ajax.get('/add', { params }).then(resp => {
           if (resp.status) {
@@ -446,6 +289,18 @@
         this.msgCancelCallback = cancelCallback
         this.msgOkOnly = onlyOk
         this.msgVisible = true
+      },
+      addNotice () {
+        let params = { notice: this.newNotice }
+        this.$ajax.get('/add_notice', { params }).then(resp => {
+          if (resp.status) {
+            this.showMsgModal('提示', '操作成功！', () => {
+              this.getRank()
+            })
+          } else {
+            this.showMsgModal('错误', resp['msg'])
+          }
+        })
       }
     },
     computed: {

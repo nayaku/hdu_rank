@@ -19,6 +19,7 @@ DB_NAME = 'hdu_rank'
 # 管理员密码
 ADMIN_PASSWORD = None
 
+
 def read_admin_password() -> None:
     """
     读取管理员密码
@@ -33,7 +34,6 @@ def read_admin_password() -> None:
     else:
         with open('admin.key', 'r') as f:
             ADMIN_PASSWORD = f.read().strip()
-
 
 # test
 # if __name__ == '__main__':

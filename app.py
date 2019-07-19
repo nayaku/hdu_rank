@@ -1,11 +1,15 @@
+import os
 import time
 import hashlib
 from flask import Flask, jsonify, request, session
 
 import hdu_crawl
 from dao import userDao
+from dao.userConfig import UserConfig, save_user_config
 from dao.userDao import create_user, User
 import my_setting
+import tempfile
+
 my_setting.read_admin_password()
 
 app = Flask(__name__)
@@ -17,7 +21,7 @@ def get_rank():
     """
     获取排行榜
     """
-    return jsonify(status=True, users=userDao.get_rank())
+    return jsonify(status=True, users=userDao.get_rank(), notice=UserConfig.notice)
 
 
 @app.route('/api/add')
@@ -157,6 +161,22 @@ def crawl_status():
     :return:
     """
     return jsonify(status=True, crawl_status=hdu_crawl.crawl_status())
+
+
+@app.route('/api/add_notice')
+def add_notice():
+    """
+    添加留言
+    :return:
+    """
+    is_admin = session.get('is_admin', False)
+    if is_admin:
+        notice = request.args.get('notice', type=str)
+        UserConfig.notice = notice
+        save_user_config()
+        return jsonify(status=True)
+    else:
+        return jsonify(status=False, msg='请先登录！')
 
 
 # hdu_crawl.crawl_start()

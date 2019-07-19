@@ -199,7 +199,23 @@ uwsgi --ini uwsgi.ini
       "mgs": 错误原因 (当状态为false时，拥有这个字段）string
       "crawl_status": 爬虫状态 union("runable","running","sleeping","stopped")
   }
+  
 ```
+
+- ### /api/add_notice 添加通知
+**参数：**
+| 字段名 | 数据类型 | 默认值 |  描   述   |
+| :----: | :------: | :----: | :--------: |
+| notice	 |   string |        | 通知  |
+**响应数据：**
+```
+  {
+      "status": 操作状态 Boolean,
+      "mgs": 错误原因 (当状态为false时，拥有这个字段）string
+  }
+  
+```
+
 ## 手动编译客户端
 安装Node.js和Yarn
 ```shell
@@ -210,6 +226,13 @@ yarn build
 ```
 
 ## 更新日记
+
+#### 2019年5月31日
+
+- 更新所有组件，移除安全隐患。
+- 移除了富文本编辑器。
+- 增加了添加公告功能。
+- 修复长时间不使用的时候，MySQL连接掉线问题。
 
 #### 2019年5月31日
 
