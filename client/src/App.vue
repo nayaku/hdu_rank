@@ -66,12 +66,16 @@
         </div>
       </div>
     </div>
+    <!-- 公告 -->
     <div class="py-2">
       <div class="container">
         <div class="row">
           <div class="col-md-12">
-            <p style="font-size: x-large;font-weight: bold">
-            {{notice}}
+            <p class="lead">
+              <span style="font-size: x-large;font-weight: bold; word-wrap:break-word">
+                {{notice}}
+              </span>
+
             </p>
           </div>
         </div>
@@ -92,7 +96,7 @@
     <!-- 添加用户 -->
     <b-modal id="addUserModal" title="添加用户" ok-title="确认" cancel-title="取消" @ok="addUser"
              :ok-disabled="formUserName===''||formAccount===''" v-model="addUserModalShow">
-      <form>
+      <form @submit="addUser">
         <div class="form-group row"><label for="user_name" class="col-2 col-form-label">姓名</label>
           <div class="col-10">
             <input type="text" class="form-control" id="user_name" placeholder="请在这里输入您的姓名。" v-model="formUserName">
@@ -117,7 +121,7 @@
     <!-- 管理员登录弹窗 -->
     <b-modal id="adminLoginModal" title="管理员登录" ok-title="确认" cancel-title="取消" @ok="adminLogin"
              v-model="adminLoginModalShow">
-      <form class="">
+      <form @submit="adminLogin">
         <div class="form-group"><label for="admin_password">密码</label>
           <input id="admin_password"
                  type="password"
@@ -135,7 +139,9 @@
     <!-- 添加公告 -->
     <b-modal id="addNoticeModal" title="添加公告" ok-title="确认" cancel-title="取消" @ok="addNotice"
              v-model="addNoticeModalShow">
-      <b-form-textarea v-model="newNotice" rows="3"></b-form-textarea>
+      <form @submit="addNotice">
+        <b-form-textarea v-model="newNotice" rows="3"></b-form-textarea>
+      </form>
     </b-modal>
   </div>
 </template>
@@ -145,8 +151,7 @@
   let SHA = require('jssha')
 
   export default {
-    components: {
-    },
+    components: {},
     name: 'app',
     data () {
       return {
