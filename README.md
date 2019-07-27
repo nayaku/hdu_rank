@@ -1,3 +1,5 @@
+![2206ea38a8b6b275b9d169efbc2d35b4_vue-markdown_style=flat](E:\code\python\hdu_rank\2206ea38a8b6b275b9d169efbc2d35b4_vue-markdown_style=flat.svg)
+
 # 说明
 
 HDU_Rank是一款基于基于Flask、Vue.js和BootstrapVue的杭电刷题排行榜爬虫。
@@ -226,6 +228,14 @@ yarn build
 ```
 
 ## 更新日记
+
+#### 2019年7月27日
+
+- 修正输入管理员密码回车时候，不登录而刷新页面的操作。
+- 公告支持Markdown语法高亮。
+- 更新了所有组件。
+- 右上角添加了包含github项目链接的丝带。
+
 
 #### 2019年5月31日
 

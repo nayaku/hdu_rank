@@ -1,5 +1,8 @@
 <template>
   <div id="app">
+    <div class="gh-ribbon">
+      <a href="https://github.com/736248591/hdu_rank" target="_blank">Fork me on GitHub</a>
+    </div>
     <div class="py-5">
       <div class="container">
         <div class="row">
@@ -71,12 +74,12 @@
       <div class="container">
         <div class="row">
           <div class="col-md-12">
-            <p class="lead">
-              <span style="font-size: x-large;font-weight: bold; word-wrap:break-word">
-                {{notice}}
-              </span>
+            <vue-markdown :source="notice"></vue-markdown>
+            <!--            <p class="lead">-->
+            <!--              <span style="font-size: x-large;font-weight: bold; word-wrap:break-word" v-html="notice">-->
+            <!--              </span>-->
 
-            </p>
+            <!--            </p>-->
           </div>
         </div>
       </div>
@@ -93,6 +96,7 @@
         </div>
       </div>
     </div>
+
     <!-- 添加用户 -->
     <b-modal id="addUserModal" title="添加用户" ok-title="确认" cancel-title="取消" @ok="addUser"
              :ok-disabled="formUserName===''||formAccount===''" v-model="addUserModalShow">
@@ -121,15 +125,25 @@
     <!-- 管理员登录弹窗 -->
     <b-modal id="adminLoginModal" title="管理员登录" ok-title="确认" cancel-title="取消" @ok="adminLogin"
              v-model="adminLoginModalShow">
-      <form @submit="adminLogin">
-        <div class="form-group"><label for="admin_password">密码</label>
-          <input id="admin_password"
-                 type="password"
-                 class="form-control"
-                 placeholder="请在这里输入管理员密码。"
-                 v-model="adminPwd">
-        </div>
-      </form>
+      <b-form @submit="adminLogin">
+        <b-form-group
+          label="密码：">
+          <b-form-input
+            v-model="adminPwd"
+            type="password"
+            required
+            placeholder="请在这里输入管理员密码。">
+
+          </b-form-input>
+        </b-form-group>
+        <!--        <div class="form-group"><label for="admin_password">密码</label>-->
+        <!--          <input id="admin_password"-->
+        <!--                 type="password"-->
+        <!--                 class="form-control"-->
+        <!--                 placeholder="请在这里输入管理员密码。"-->
+        <!--                 v-model="adminPwd">-->
+        <!--        </div>-->
+      </b-form>
     </b-modal>
     <!-- 消息弹窗 -->
     <b-modal id="msgModal" size="sm" :title="msgTitle" ok-title="确认" cancel-title="取消" @ok="msgOkCallback"
@@ -137,21 +151,25 @@
       <p :class="msgClass" v-html="msg"></p>
     </b-modal>
     <!-- 添加公告 -->
-    <b-modal id="addNoticeModal" title="添加公告" ok-title="确认" cancel-title="取消" @ok="addNotice"
+    <b-modal id="addNoticeModal" title="添加公告" ok-title="确认" cancel-title="取消" @ok="addNotice" size="xl"
              v-model="addNoticeModalShow">
       <form @submit="addNotice">
         <b-form-textarea v-model="newNotice" rows="3"></b-form-textarea>
+        <hr/>
+        <p>预览：</p>
+        <vue-markdown :source="newNotice"></vue-markdown>
       </form>
     </b-modal>
   </div>
 </template>
 
 <script>
+  import VueMarkdown from 'vue-markdown'
 
   let SHA = require('jssha')
 
   export default {
-    components: {},
+    components: { VueMarkdown },
     name: 'app',
     data () {
       return {
@@ -225,7 +243,8 @@
           }
         })
       },
-      adminLogin () {
+      adminLogin (event) {
+        event.preventDefault()
         let sha = new SHA('SHA3-512', 'TEXT')
         let timeToken = Math.floor((new Date()).getTime() / 10000)
         console.log('time:' + timeToken)
@@ -235,6 +254,7 @@
         this.$ajax.get('/login_admin', { params: { pwd } }).then(resp => {
           if (resp.status) {
             this.getLoginInfo()
+            this.adminLoginModalShow = false
           } else {
             this.showMsgModal('错误', resp['msg'])
           }
@@ -326,4 +346,47 @@
 <style lang="scss">
   @import "./assets/css/style.scss";
   @import "./assets/css/editor.scss";
+
+  .gh-ribbon {
+    display: block;
+    position: absolute;
+    right: -60px;
+    top: 44px;
+    -webkit-transform: rotate(45deg);
+    transform: rotate(45deg);
+    width: 230px;
+    z-index: 10000;
+    white-space: nowrap;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background-color: #686868;
+    box-shadow: 0 0 2px rgba(102, 102, 102, 0.4);
+    padding: 1px 0;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #333;
+  }
+
+  .gh-ribbon a {
+    text-decoration: none !important;
+    border: 1px solid #ccc;
+    color: #fff;
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    outline: medium none;
+    padding: 4px 50px 2px;
+    text-align: center;
+  }
+
+  .gh-ribbon a:hover {
+    text-decoration: none !important;
+    border: 1px solid #ccc;
+    color: #ebebeb;
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    outline: medium none;
+    padding: 4px 50px 2px;
+    text-align: center;
+  }
 </style>
