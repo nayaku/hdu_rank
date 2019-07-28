@@ -1,4 +1,4 @@
-![2206ea38a8b6b275b9d169efbc2d35b4_vue-markdown_style=flat](E:\code\python\hdu_rank\2206ea38a8b6b275b9d169efbc2d35b4_vue-markdown_style=flat.svg)
+![2206ea38a8b6b275b9d169efbc2d35b4_vue-markdown_style=flat](2206ea38a8b6b275b9d169efbc2d35b4_vue-markdown_style=flat.svg)
 
 # 说明
 
