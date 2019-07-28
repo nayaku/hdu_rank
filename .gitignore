@@ -7,10 +7,17 @@
 *.sln
 *.sw*
 
+*.pyc
+
 # 秘钥
 admin.key
 
 # Byte-compiled / optimized / DLL files
 __pycache__
+__pycache__/
 *.py[cod]
 *$py.class
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
