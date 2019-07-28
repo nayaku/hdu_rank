@@ -154,9 +154,8 @@
     <b-modal id="addNoticeModal" title="添加公告" ok-title="确认" cancel-title="取消" @ok="addNotice" size="xl"
              v-model="addNoticeModalShow">
       <form @submit="addNotice">
-        <b-form-textarea v-model="newNotice" rows="3"></b-form-textarea>
+        <b-form-textarea v-model="newNotice" rows="8"></b-form-textarea>
         <hr/>
-        <p>预览：</p>
         <vue-markdown :source="newNotice"></vue-markdown>
       </form>
     </b-modal>
@@ -202,7 +201,7 @@
           console.log(resp)
           if (resp['status']) {
             this.users = resp['users']
-            this.notice = resp['notice']
+            this.newNotice = this.notice = resp['notice']
           }
         })
       },
@@ -215,6 +214,9 @@
         this.$ajax.get('/add', { params }).then(resp => {
           if (resp.status) {
             this.showMsgModal('提示', '操作成功！', () => {
+              this.formUserName = ''
+              this.formAccount = ''
+              this.formMotto = ''
               this.getRank()
             })
           } else {
@@ -253,6 +255,7 @@
         console.log('token:' + pwd)
         this.$ajax.get('/login_admin', { params: { pwd } }).then(resp => {
           if (resp.status) {
+            this.adminPwd = ''
             this.getLoginInfo()
             this.adminLoginModalShow = false
           } else {
@@ -355,7 +358,7 @@
     -webkit-transform: rotate(45deg);
     transform: rotate(45deg);
     width: 230px;
-    z-index: 10000;
+    z-index: inherit;
     white-space: nowrap;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     background-color: #686868;

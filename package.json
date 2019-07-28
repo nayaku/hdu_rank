@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "terser-webpack-plugin": "^1.3.0"
+  }
+}
