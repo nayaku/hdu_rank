@@ -30,7 +30,7 @@ cd lnmp1.6beta
 # 其中MySQL版本建议选择MySQL8，其余根据需求选择
 
 # 安装screen和git（如果已经安装可以跳过）
-yum install screen git vim
+yum install screen git vim -y
 # 安装所需的PIP库
 pip3 install flask pymysql requests uWSGI
 # 增加hdurank的用户名和组
@@ -228,6 +228,10 @@ yarn build
 ```
 
 ## 更新日记
+
+### 2019年9月2日
+
+- 更新了依赖包，重新编译网页客户端。
 
 #### 2019年7月28日
 
