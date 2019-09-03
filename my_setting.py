@@ -1,9 +1,9 @@
-# 主循环间隔时间(s)
 import os
 import random
 import string
 
-MAIN_LOOP_INTERVAL = 5
+# 主循环间隔时间(s)
+MAIN_LOOP_INTERVAL = 30 * 60
 # 爬取页面休息时间(s)
 CRAWL_SLEEP_TIME = 1
 # HDU的网址
