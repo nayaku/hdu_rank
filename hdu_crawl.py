@@ -3,7 +3,7 @@ import threading
 import time
 import traceback
 from threading import Thread
-from typing import Optional, Callable, Any, Iterable, Mapping, List
+from typing import Optional, Callable, Any, Iterable, Mapping, List, Union
 
 from requests import TooManyRedirects, Timeout, HTTPError
 
@@ -25,6 +25,21 @@ def crawl_page(url: str) -> str:
     print(f'GET[{resp.status_code}]:{url}')
     resp.raise_for_status()
     return resp.text
+
+
+def exist_hdu_account(account: str, content: Union[str, None] = None) -> bool:
+    """
+    判断杭电账号是否正确存在
+    :param account:
+    :param content: 网页内容，如果未设置则自动爬取
+    :return: 存在返回True，否则返回False
+    """
+    if not content:
+        url = HDU_URL + '/userstatus.php?user=' + account
+        content = crawl_page(url)
+    pattern = re.compile('No such user.', re.S)
+    res = re.search(pattern, content)
+    return res is None
 
 
 def crawl_user_info(user: User) -> bool:
@@ -111,4 +126,5 @@ def crawl_status() -> str:
 
 
 if __name__ == '__main__':
-    crawl_page('http://acm.hdu.edu.cn/userstatus.php?user=736248591')
+    # crawl_page('http://acm.hdu.edu.cn/userstatus.php?user=736248591')
+    print (exist_hdu_account("736248591"))

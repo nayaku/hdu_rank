@@ -1,12 +1,14 @@
 import os
 import time
 import hashlib
+from typing import Union
+
 from flask import Flask, jsonify, request, session
 
 import hdu_crawl
 from dao import userDao
 from dao.userConfig import UserConfig, save_user_config
-from dao.userDao import create_user, User
+from dao.userDao import create_user, User, exist_user
 import my_setting
 import tempfile
 
@@ -24,6 +26,34 @@ def get_rank():
     return jsonify(status=True, users=userDao.get_rank(), notice=UserConfig.notice)
 
 
+def validate_user_without_get_request(account: str) -> Union[str,None]:
+    """
+    验证账号是否合法
+    :return: 合法返回None，否则返回原因。
+    """
+    if hdu_crawl.exist_hdu_account(account):
+        if not exist_user(account):
+            return None
+        else:
+            return '账号已经存在！'
+    else:
+        return '输入的账号不正确！'
+
+
+@app.route('/api/validate_user')
+def validate_user():
+    """
+    验证用户是否合法
+    :return:
+    """
+    account = request.args.get('account',type=str)
+    res = validate_user_without_get_request(account)
+    if not res:
+        return jsonify(status=True)
+    else:
+        return jsonify(status=False, msg=res)
+
+
 @app.route('/api/add')
 def add():
     """
@@ -33,10 +63,12 @@ def add():
     name = request.args.get('name', type=str)
     account = request.args.get('account', type=str)
     motto = request.args.get('motto', type=str)
-    if create_user(name, account, motto):
+    res = validate_user_without_get_request(account)
+    if not res:
+        create_user(name,account,motto)
         return jsonify(status=True)
     else:
-        return jsonify(status=False, msg='账号已经存在！')
+        return jsonify(status=False, msg=res)
 
 
 @app.route('/api/remove')

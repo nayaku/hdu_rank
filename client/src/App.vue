@@ -99,28 +99,68 @@
 
     <!-- 添加用户 -->
     <b-modal id="addUserModal" title="添加用户" ok-title="确认" cancel-title="取消" @ok="addUser"
-             :ok-disabled="formUserName===''||formAccount===''" v-model="addUserModalShow">
-      <form @submit="addUser">
-        <div class="form-group row"><label for="user_name" class="col-2 col-form-label">姓名</label>
-          <div class="col-10">
-            <input type="text" class="form-control" id="user_name" placeholder="请在这里输入您的姓名。" v-model="formUserName">
-          </div>
-        </div>
-        <div class="form-group row"><label for="account" class="col-2 col-form-label">账号</label>
-          <div class="col-10">
-            <input type="text" class="form-control" id="account" placeholder="请在这里输入您的杭电的账号名。" v-model="formAccount">
-          </div>
-          <div class="text-right col-12 inline form-text" style="margin:0;font-size:12px">
-            <small class="text-right text-danger"> 注意：这里填写的是您杭电的登录账号，不是用户名，请注意！</small>
-          </div>
-        </div>
-        <div class="form-group row"><label class="col-2 col-form-label">格言</label>
-          <div class="col-10">
+             :ok-disabled="addUserModalOkDisabled" v-model="addUserModalShow">
+      <b-form @submit="addUser">
+        <b-form-group
+          label="姓名：">
+          <b-form-input
+            :state="formUserNameState"
+            aria-describedby="formUserNameFeedback"
+            placeholder="请在这里输入您的姓名。"
+            required
+            trim
+            type="text"
+            v-model="formUserName">
+          </b-form-input>
+          <b-form-invalid-feedback id="formUserNameFeedback">
+            姓名长度应该在2-16之间。
+          </b-form-invalid-feedback>
+        </b-form-group>
+        <b-form-group
+          label="账号：">
+          <b-form-input
+            :state="formAccountState && formAccountAvailable"
+            placeholder="请在这里输入您的杭电的账号名。"
+            v-model="formAccount"
+            required
+            trim
+            @blur="validateFormAccount"></b-form-input>
+        </b-form-group>
+        <b-form-invalid-feedback :state="formAccountState">
+          账号长度应该在1-64之间。
+        </b-form-invalid-feedback>
+        <b-form-invalid-feedback :state="formAccountAvailable">
+          {{formAccountServerFeedbackString}}
+        </b-form-invalid-feedback>
+        <b-form-group
+          label="格言：">
+          <b-form-textarea
+            :state="formMottoState"
+            v-model="formMotto"
+            rows="3"
+            aria-describedby="formMottoFeedback"></b-form-textarea>
+          <b-form-invalid-feedback id="formMottoFeedback">格言长度不应该大于255。</b-form-invalid-feedback>
+        </b-form-group>
+        <!--        <div class="form-group row"><label for="user_name" class="col-2 col-form-label">姓名</label>-->
+        <!--          <div class="col-10">-->
+        <!--            <input type="text" class="form-control" id="user_name" placeholder="请在这里输入您的姓名。" v-model="formUserName">-->
+        <!--          </div>-->
+        <!--        </div>-->
+        <!--        <div class="form-group row"><label for="account" class="col-2 col-form-label">账号</label>-->
+        <!--          <div class="col-10">-->
+        <!--            <input type="text" class="form-control" id="account" placeholder="请在这里输入您的杭电的账号名。" v-model="formAccount">-->
+        <!--          </div>-->
+        <!--          <div class="text-right col-12 inline form-text" style="margin:0;font-size:12px">-->
+        <!--            <small class="text-right text-danger"> 注意：这里填写的是您杭电的登录账号，不是用户名，请注意！</small>-->
+        <!--          </div>-->
+        <!--        </div>-->
+        <!--        <div class="form-group row"><label class="col-2 col-form-label">格言</label>-->
+        <!--          <div class="col-10">-->
 
-          </div>
-        </div>
-      </form>
-      <b-form-textarea v-model="formMotto" rows="3"></b-form-textarea>
+        <!--          </div>-->
+        <!--        </div>-->
+      </b-form>
+      <!--      <b-form-textarea v-model="formMotto" rows="3"></b-form-textarea>-->
     </b-modal>
     <!-- 管理员登录弹窗 -->
     <b-modal id="adminLoginModal" title="管理员登录" ok-title="确认" cancel-title="取消" @ok="adminLogin"
@@ -177,6 +217,8 @@
         users: [],
         formUserName: '',
         formAccount: '',
+        formAccountAvailable: false,
+        formAccountServerFeedbackString: '当失去焦点时将验证账号',
         formMotto: '',
         msg: '',
         msgClass: '',
@@ -202,6 +244,20 @@
           if (resp['status']) {
             this.users = resp['users']
             this.newNotice = this.notice = resp['notice']
+          }
+        })
+      },
+      validateFormAccount () {
+        this.formAccountServerFeedbackString = '检测中……'
+        let params = {
+          account: this.formAccount
+        }
+        this.$ajax.get('/validate_user', { params }).then(resp => {
+          if (!resp.status) {
+            this.formAccountServerFeedbackString = resp.msg
+            this.formAccountAvailable = false
+          } else {
+            this.formAccountAvailable = true
           }
         })
       },
@@ -334,6 +390,18 @@
     computed: {
       crawlStatusClass () {
         return this.crawlStatus === 'stopped' ? 'text-primary' : 'text-danger'
+      },
+      formUserNameState () {
+        return this.formUserName.length > 1 && this.formUserName.length <= 16
+      },
+      formAccountState () {
+        return this.formAccount.length >= 1 && this.formAccount.length <= 64
+      },
+      formMottoState () {
+        return this.formMotto.length <= 255
+      },
+      addUserModalOkDisabled () {
+        return !(this.formUserNameState && this.formAccountState && this.formMottoState && this.formAccountAvailable)
       }
     },
     mounted () {

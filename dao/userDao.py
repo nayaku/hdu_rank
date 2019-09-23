@@ -49,24 +49,39 @@ class User:
             connect.commit()
 
 
-def create_user(name: str, account: str, motto: str) -> Union[bool, User]:
+def exist_user(account: str) -> bool:
+    '''
+    判断账号是否已经被占用
+    :param account:
+    :return: 被占用返回True，否则返回False
+    '''
+    sql = '''SELECT 1 FROM `users` WHERE account = %s LIMIT 1'''
+    connect = get_connect()
+    with connect.cursor() as cursor:
+        cursor.execute(sql, (account,))
+        if cursor.fetchone():
+            return True
+    return False
+
+
+def create_user(name: str, account: str, motto: str) -> User:
     """
     创建用户
     :param name: 姓名
     :param account: 账号
     :param motto: 格言
-    :return: 成功返回User,否则返回False
+    :return: 成功返回User
     """
     user = User()
     user.name = name
     user.account = account
     user.motto = motto
-    sql = '''SELECT 1 FROM `users` WHERE account = %s LIMIT 1'''
+    # sql = '''SELECT 1 FROM `users` WHERE account = %s LIMIT 1'''
     connect = get_connect()
-    with connect.cursor() as cursor:
-        cursor.execute(sql, (user.account,))
-        if cursor.fetchone():
-            return False
+    # with connect.cursor() as cursor:
+    #     cursor.execute(sql, (user.account,))
+    #     if cursor.fetchone():
+    #         return False
     sql = '''INSERT INTO users(`name`,account,motto,solved_num,`status`) VALUES(%s,%s,%s,%s,%s)'''
 
     with connect.cursor() as cursor:
