@@ -37,9 +37,9 @@
                     <i class="fa d-inline fa-lg fa-times text-danger" v-if="isAdmin"
                        @click="removeUser(user['id'])"></i>
                   </td>
-                  <td>{{user['name']}}</td>
-                  <td>{{user['account']}}</td>
-                  <td>{{user['motto']}}</td>
+                  <td class="table-text-wrap">{{user['name']}}</td>
+                  <td class="table-text-wrap">{{user['account']}}</td>
+                  <td class="table-text-wrap">{{user['motto']}}</td>
                   <td>
                     <template v-if="user['status']==='unchecked'">
                       <span class="text-warning">待确认</span>
@@ -415,4 +415,10 @@
 <style lang="scss">
   @import "./assets/css/style.scss";
   @import "./assets/css/editor.scss";
+
+  // 表单的可换行的文字
+  .table-text-wrap {
+    word-wrap: break-word;
+    word-break: break-all;
+  }
 </style>
