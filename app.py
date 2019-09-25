@@ -4,6 +4,7 @@ import hashlib
 from typing import Union
 
 from flask import Flask, jsonify, request, session
+from requests import HTTPError, TooManyRedirects, Timeout
 
 import hdu_crawl
 from dao import userDao
@@ -31,13 +32,16 @@ def validate_user_without_get_request(account: str) -> Union[str,None]:
     验证账号是否合法
     :return: 合法返回None，否则返回原因。
     """
-    if hdu_crawl.exist_hdu_account(account):
-        if not exist_user(account):
-            return None
+    try:
+        if hdu_crawl.exist_hdu_account(account):
+            if not exist_user(account):
+                return None
+            else:
+                return '账号已经存在！'
         else:
-            return '账号已经存在！'
-    else:
-        return '输入的账号不正确！'
+            return '输入的账号不正确！'
+    except (ConnectionError, HTTPError, Timeout, TooManyRedirects):
+        return '连接杭电OJ失败！'
 
 
 @app.route('/api/validate_user')

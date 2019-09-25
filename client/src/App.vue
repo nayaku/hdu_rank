@@ -1,8 +1,5 @@
 <template>
   <div id="app">
-    <div class="gh-ribbon">
-      <a href="https://github.com/736248591/hdu_rank" target="_blank">Fork me on GitHub</a>
-    </div>
     <div class="py-5">
       <div class="container">
         <div class="row">
@@ -91,6 +88,7 @@
             <p class="mb-0">Writed By 雪靡. All rights reserved |
               <b-button variant="link" v-if="!isAdmin" @click="adminLoginModalShow = true">管理员登录</b-button>
               <b-button variant="link" v-else @click="adminLogout">管理员退出</b-button>
+              | Open Source on <a href="https://github.com/736248591/hdu_rank" target="_blank">GitHub</a>
             </p>
           </div>
         </div>
@@ -417,47 +415,4 @@
 <style lang="scss">
   @import "./assets/css/style.scss";
   @import "./assets/css/editor.scss";
-
-  .gh-ribbon {
-    display: block;
-    position: absolute;
-    right: -60px;
-    top: 44px;
-    -webkit-transform: rotate(45deg);
-    transform: rotate(45deg);
-    width: 230px;
-    z-index: inherit;
-    white-space: nowrap;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    background-color: #686868;
-    box-shadow: 0 0 2px rgba(102, 102, 102, 0.4);
-    padding: 1px 0;
-    font-size: 14px;
-    line-height: 1.42857143;
-    color: #333;
-  }
-
-  .gh-ribbon a {
-    text-decoration: none !important;
-    border: 1px solid #ccc;
-    color: #fff;
-    display: block;
-    font-size: 13px;
-    font-weight: 700;
-    outline: medium none;
-    padding: 4px 50px 2px;
-    text-align: center;
-  }
-
-  .gh-ribbon a:hover {
-    text-decoration: none !important;
-    border: 1px solid #ccc;
-    color: #ebebeb;
-    display: block;
-    font-size: 13px;
-    font-weight: 700;
-    outline: medium none;
-    padding: 4px 50px 2px;
-    text-align: center;
-  }
 </style>
