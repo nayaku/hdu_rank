@@ -6,6 +6,7 @@ from threading import Thread
 from typing import Optional, Callable, Any, Iterable, Mapping, List, Union
 
 from requests import TooManyRedirects, Timeout, HTTPError
+from requests.adapters import HTTPAdapter
 
 from dao.userDao import get_fetching_list, User
 from my_setting import *
@@ -13,15 +14,22 @@ from my_setting import *
 import requests
 
 
-def crawl_page(url: str) -> str:
+def crawl_page(url: str, timeout: int = 5, max_retries: int = 3) -> str:
     """
     爬取页面
     :param url:
+    :param max_retries:
+    :param timeout:
     :return:
     """
     time.sleep(CRAWL_SLEEP_TIME)
     # headers = {'User-Agent': 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'}
-    resp = requests.get(url)
+    # 爬取一次就关闭连接。设置超时和最大尝试次数
+    s = requests.Session()
+    s.mount('http://', HTTPAdapter(max_retries=max_retries))
+    s.mount('https://', HTTPAdapter(max_retries=max_retries))
+    s.keep_alive = False
+    resp = s.get(url, timeout=timeout)
     print(f'GET[{resp.status_code}]:{url}')
     resp.raise_for_status()
     return resp.text
@@ -36,7 +44,7 @@ def exist_hdu_account(account: str, content: Union[str, None] = None) -> bool:
     """
     if not content:
         url = HDU_URL + '/userstatus.php?user=' + account
-        content = crawl_page(url)
+        content = crawl_page(url, 3, 1)
     pattern = re.compile('No such user.', re.S)
     res = re.search(pattern, content)
     return res is None
@@ -127,4 +135,4 @@ def crawl_status() -> str:
 
 if __name__ == '__main__':
     # crawl_page('http://acm.hdu.edu.cn/userstatus.php?user=736248591')
-    print (exist_hdu_account("736248591"))
+    print(exist_hdu_account("736248591"))
