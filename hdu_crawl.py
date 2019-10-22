@@ -14,7 +14,7 @@ from my_setting import *
 import requests
 
 
-def crawl_page(url: str, timeout: int = 5, max_retries: int = 3) -> str:
+def crawl_page(url: str, timeout: int = 8, max_retries: int = 5) -> str:
     """
     爬取页面
     :param url:
