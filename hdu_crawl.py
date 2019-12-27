@@ -134,5 +134,5 @@ def crawl_status() -> str:
 
 
 if __name__ == '__main__':
-    # crawl_page('http://acm.hdu.edu.cn/userstatus.php?user=736248591')
-    print(exist_hdu_account("736248591"))
+    print(crawl_page('https://www.baidu.com/s?wd=%E6%90%BA%E5%8F%B7%E8%BD%AC%E7%BD%91&rsv_spt=1&rsv_iqid=0xd55a7fc00003b203&issp=1&f=8&rsv_bp=1&rsv_idx=2&ie=utf-8&tn=baiduhome_pg&rsv_dl=tb&rsv_enter=1&rsv_sug3=3&rsv_sug1=1&rsv_sug7=100&rsv_sug2=0&inputT=2390&rsv_sug4=11390'))
+    #print(exist_hdu_account("736248591"))
