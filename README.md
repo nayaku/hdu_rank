@@ -66,6 +66,12 @@ uwsgi --ini uwsgi.ini
 ```
 # 进阶开发
 
+## 数据库逻辑表
+
+ [数据库逻辑表.xlsx](数据库逻辑表.xlsx) 
+
+
+
 ## API接口
 
 - ### /api/get_rank 获取排行榜
@@ -74,8 +80,8 @@ uwsgi --ini uwsgi.ini
 ```
   {
       "status": 操作状态 Boolean,
-      "msg": 错误原因 (当状态为false时，拥有这个字段）string,
-      "users": 用户列表(当状态为True时，拥有这个字段）
+      "msg": 错误原因 （当状态为false时，拥有这个字段）string,
+      "users": 用户列表（当状态为True时，拥有这个字段）
       [
           [
               id 用户ID unsigned int,
@@ -89,7 +95,17 @@ uwsgi --ini uwsgi.ini
   }
 ```
 
+- ### /api/register 注册
+  
+  
+  
+- ### /api/login 登录
+  
 - ### /api/validate_user 验证用户
+
+  
+- ### /api/update_userinfo 更新用户信息
+  
   **参数：**
 | 字段名 | 数据类型 | 默认值 |  描   述   |
 | :----: | :------: | :----: | :--------: |
@@ -233,7 +249,10 @@ uwsgi --ini uwsgi.ini
   
 ```
 
+
+
 ## 手动编译客户端
+
 安装Node.js和Yarn
 ```shell
 cd hdu_rank
