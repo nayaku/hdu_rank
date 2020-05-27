@@ -11,17 +11,22 @@ class User:
     ACTIVE_STATUS = 'active'
 
     def __init__(self) -> None:
-        self.id = 0
-        self.name = ''
-        self.account = ''
-        self.motto = ''
-        self.solved_num = 0
-        self.status = self.UNCHECKED_STATUS
+        self.id = None
+        self.uid = None
+        self.pwd = None
+        self.class_name = None
+        self.name = None
+        self.motto = None
+        self.account = None
+        self.solved_num = None
+        self.status = None
+        self.html = None
 
     def update(self) -> None:
         """
         更新用户
         """
+        for filed in
         sql = '''UPDATE users SET `name`=%s,account=%s,motto=%s,solved_num=%s,`status`=%s WHERE id=%s'''
         connect = get_connect()
         with connect.cursor() as cursor:

@@ -79,55 +79,62 @@ uwsgi --ini uwsgi.ini
 **响应数据：**
 ```
   {
-      "status": 操作状态 Boolean,
-      "msg": 错误原因 （当状态为false时，拥有这个字段）string,
-      "users": 用户列表（当状态为True时，拥有这个字段）
+      status: 操作状态 Boolean,
+      msg: 错误原因 （当状态为false时，拥有这个字段）string,
+      users: 用户列表（当状态为True时，拥有这个字段）
       [
-          [
-              id 用户ID unsigned int,
+          {
+              id: 用户ID unsigned int,
+              uid 登录账号 string,
+              class 班级 string,
               name 姓名 string,
-              account 账号 string,
               motto 格言 string,
+              account 账号 string,
               solved_num 题数 int,
               status 状态 union("unchecked","fetching","active")
-          ]
+          }
       ]
   }
 ```
 
-- ### /api/register 注册
-  
-  
-  
-- ### /api/login 登录
-  
-- ### /api/validate_user 验证用户
-
-  
-- ### /api/update_userinfo 更新用户信息
-  
-  **参数：**
+- ### /api/login 登录  不填写任何信息的时候，则返回当前登录信息。
+**参数：**
 | 字段名 | 数据类型 | 默认值 |  描   述   |
 | :----: | :------: | :----: | :--------: |
-| account |  string(64)  |        |  账号  |
+| uid	 | string(16) |        | 账号  |
+| pwd	 | string(16) |    ""  | 密码，sha3-512(md5(原始密码)) |
 **响应数据：**
 ```
   {
-      "status": 是否合法 Boolean,
-      "mgs": 不合法的时候拥有这个字段，表示不合法的原因。
+      status: 操作状态 Boolean,
+      mgs: 错误原因 (当状态为false时，拥有这个字段）string，
+      // 当登录成功时候显示以下信息
+      id 用户ID unsigned int,
+      uid 登录账号 string,
+      class 班级 string,
+      name 姓名 string,
+      motto 格言 string,
+      account 账号 string,
+      solved_num 题数 int,
+      status 状态 union("unchecked","fetching","active"),
+      html 自定义页面代码 string
   }
 ```
 
-
-- ### /api/add 添加用户
-  **参数：**
+- ### /api/put_user 添加或者修改用户
+**说明：**  修改时候，只需提交ID和修改的字段即可。
+**参数：**
 | 字段名 | 数据类型 | 默认值 |  描   述   |
 | :----: | :------: | :----: | :--------: |
+| id	 | int |  0      | 用户唯一标识  |
+| uid	 | string(16) |        | 登录账号  |
+| pwd	 | string(16) |    ""  | 密码 |
+| class	 | string(24) |    ""    | 班级 |
 | name	 | string(16) |        | 姓名  |
-| account |  string(64)  |        |  账号  |
+| account |  string(64)  |        |  杭电账号  |
 |  motto | string(255) |        |   格言   |
+|  html | string |        |   自定义代码   |
 **响应数据：**
-
 ```
   {
       "status": 操作状态 Boolean,
@@ -135,8 +142,33 @@ uwsgi --ini uwsgi.ini
   }
 ```
 
+- ### /api/validate_user 验证字段
+**参数：**
+| 字段名 | 数据类型 | 默认值 |  描   述   |
+| :----: | :------: | :----: | :--------: |
+|  field | string |        |   字段   |
+|  value | string |        |  数值   |
+  **响应数据：**
+```
+  {
+      "status": 操作状态 Boolean,
+      "mgs": 错误原因 (当状态为false时，拥有这个字段）string
+  }
+```
+
+- ### /api/logout 登出  用户和管理员均可使用。
+**参数：** (无)
+**响应数据：**
+```
+  {
+      "status": 操作状态 Boolean,
+      "mgs": 错误原因 (当状态为false时，拥有这个字段）string
+  }
+```
+
+
 - ### /api/remove 删除用户
-**说明：** 必须先登录才能使用该接口。
+**说明：** 必须先登录才能使用该接口。用户只能删除自己，只有管理员可以删除任意用户。
 **参数：**
 | 字段名 | 数据类型 | 默认值 |  描   述   |
 | :----: | :------: | :----: | :--------: |
@@ -150,35 +182,57 @@ uwsgi --ini uwsgi.ini
 ```
 
 - ### /api/login_admin 管理员登录
-**说明：** 登录的token留在Session中。
 **参数：**
 | 字段名 | 数据类型 | 默认值 |  描   述   |
 | :----: | :------: | :----: | :--------: |
-| pwd	 |   string |        | 管理员密码<br/>字段=sha3-512(PWD+time%10000+PWD) |
+| uid	 |   unsigned int |        | 管理员ID  |
+| pwd	 |   string |        | 密码，sha3-512(md5(原始密码))  |
 **响应数据：**
-
 ```
   {
       "status": 操作状态 Boolean,
-      "mgs": 错误原因 (当状态为false时，拥有这个字段）string
+      "mgs": 错误原因 (当状态为false时，拥有这个字段）string,
+      "id": 管理员ID int,
+      "uid": 管理员 string,
+      "is_super": 是否可以管理其他用户 bool,
   }
 ```
 
-- ### /api/logout_admin 管理员登出
-**说明：** 清空session。
+- ### /api/list_admin 管理员列表
 **参数：** (无)
 **响应数据：**
 ```
   {
       "status": 操作状态 Boolean,
-      "mgs": 错误原因 (当状态为false时，拥有这个字段）string
+      "mgs": 错误原因 (当状态为false时，拥有这个字段）string,
+      [
+        "id": 管理员ID int,
+        "uid": 管理员登录账号 int,
+        "is_super": 是否可以管理其他管理员 bool
+      ]
   }
 ```
 
-- ### /api/confirm 确认用户
+- ### /api/put_admin 添加或修改管理员
+**说明：**  修改时候，只需提交ID和修改的字段即可。
+**参数：**
+| 字段名 | 数据类型 | 默认值 |  描   述   |
+| :----: | :------: | :----: | :--------: |
+| id	 |   unsigned int |        | ID  |
+| uid	 |   unsigned int |        | 管理员ID  |
+| is_super	 |   bool |        | 是否可以管理其他用户  |
+| pwd	 |   string |        | 密码，sha3-512(md5(原始密码))  |
+**响应数据：**
+```
+  {
+      "status": 操作状态 Boolean,
+      "mgs": 错误原因 (当状态为false时，拥有这个字段）string,
+  }
+```
 
-  **说明：** 必须先登录才能使用该接口。
-  **参数：**
+- ### /api/remove_admin  删除管理员
+**说明：** 必须先登录才能使用该接口。普通管理员只能删除自己，只有超级管理员才能删除其他管理员。
+**参数：**
 | 字段名 | 数据类型 | 默认值 |  描   述   |
 | :----: | :------: | :----: | :--------: |
 | id	 |   unsigned int |        | 用户ID  |
@@ -187,17 +241,6 @@ uwsgi --ini uwsgi.ini
   {
       "status": 操作状态 Boolean,
       "mgs": 错误原因 (当状态为false时，拥有这个字段）string
-  }
-```
-
-- ### /api/get_login_info 获取登录信息
-**参数：** （无）
-**响应数据：**
-```
-  {
-      "status": 操作状态 Boolean,
-      "mgs": 错误原因 (当状态为false时，拥有这个字段）string,
-      "is_admin":是否已经登录管理员权限 Boolean
   }
 ```
 

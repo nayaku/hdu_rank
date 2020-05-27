@@ -27,7 +27,7 @@ def get_rank():
     return jsonify(status=True, users=userDao.get_rank(), notice=UserConfig.notice)
 
 
-def validate_user_without_get_request(account: str) -> Union[str,None]:
+def validate_user_without_get_request(account: str) -> Union[str, None]:
     """
     验证账号是否合法
     :return: 合法返回None，否则返回原因。
@@ -50,12 +50,24 @@ def validate_user():
     验证用户是否合法
     :return:
     """
-    account = request.args.get('account',type=str)
+    account = request.args.get('account', type=str)
     res = validate_user_without_get_request(account)
     if not res:
         return jsonify(status=True)
     else:
         return jsonify(status=False, msg=res)
+
+
+@app.route('/api/login')
+def login():
+    """
+    登录
+    :return:
+    """
+    if 'uid' in request.args:
+        uid = request.args.get('uid', type=str)
+        pwd = request.args.get('pwd', type=str)
+
 
 
 @app.route('/api/add')
@@ -69,7 +81,7 @@ def add():
     motto = request.args.get('motto', type=str)
     res = validate_user_without_get_request(account)
     if not res:
-        create_user(name,account,motto)
+        create_user(name, account, motto)
         return jsonify(status=True)
     else:
         return jsonify(status=False, msg=res)
