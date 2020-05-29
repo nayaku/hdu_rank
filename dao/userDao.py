@@ -26,12 +26,21 @@ class User:
         """
         更新用户
         """
-        for filed in
-        sql = '''UPDATE users SET `name`=%s,account=%s,motto=%s,solved_num=%s,`status`=%s WHERE id=%s'''
-        connect = get_connect()
-        with connect.cursor() as cursor:
-            cursor.execute(sql, (self.name, self.account, self.motto, self.solved_num, self.status, self.id))
-            connect.commit()
+        if not self.id:
+            raise Exception("Need id when update.")
+        else:
+            parameters = []
+            sql_request_string = []
+            for filed in self.__dict__.items():
+                if filed[1]:
+                    sql_request_string.append(str.format("`{0}`=%s", filed[0]))
+                    parameters.append(filed[1])
+            sql = '''UPDATE users SET '''+','.join(sql_request_string)+''' WHERE id=%s'''
+            parameters.append(self.id)
+            connect = get_connect()
+            with connect.cursor() as cursor:
+                cursor.execute(sql, tuple(parameters))
+                connect.commit()
 
     def confirm(self) -> None:
         """
