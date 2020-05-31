@@ -32,7 +32,7 @@ cd lnmp1.6beta
 # 安装screen和git（如果已经安装可以跳过）
 yum install screen git vim -y
 # 安装所需的PIP库
-pip3 install flask pymysql requests uWSGI
+pip3 install flask pymysql requests uWSGI aiohttp
 # 增加hdurank的用户名和组
 /usr/sbin/groupadd hdurank
 /usr/sbin/useradd -g hdurank hdurank
@@ -122,14 +122,14 @@ uwsgi --ini uwsgi.ini
 ```
 
 - ### /api/put_user 添加或者修改用户
-**说明：**  修改时候，只需提交ID和修改的字段即可。
+**说明：**  修改时候，只需提交ID和修改的字段即可。添加用户时候，不需要id。
 **参数：**
 | 字段名 | 数据类型 | 默认值 |  描   述   |
 | :----: | :------: | :----: | :--------: |
-| id	 | int |  0      | 用户唯一标识  |
+| id	 | int |        | 用户唯一标识  |
 | uid	 | string(16) |        | 登录账号  |
 | pwd	 | string(16) |    ""  | 密码 |
-| class	 | string(24) |    ""    | 班级 |
+| class_name	 | string(24) |    ""    | 班级 |
 | name	 | string(16) |        | 姓名  |
 | account |  string(64)  |        |  杭电账号  |
 |  motto | string(255) |        |   格言   |

@@ -1,7 +1,7 @@
 import os
 import time
 import hashlib
-from typing import Union
+from typing import Union, Optional
 
 from flask import Flask, jsonify, request, session
 from requests import HTTPError, TooManyRedirects, Timeout
@@ -9,7 +9,7 @@ from requests import HTTPError, TooManyRedirects, Timeout
 import hdu_crawl
 from dao import userDao
 from dao.userConfig import UserConfig, save_user_config
-from dao.userDao import create_user, User, exist_user
+from dao.userDao import create_user, User, exist_account, login_validate, exist_uid
 import my_setting
 import tempfile
 
@@ -27,37 +27,6 @@ def get_rank():
     return jsonify(status=True, users=userDao.get_rank(), notice=UserConfig.notice)
 
 
-def validate_user_without_get_request(account: str) -> Union[str, None]:
-    """
-    验证账号是否合法
-    :return: 合法返回None，否则返回原因。
-    """
-    try:
-        if hdu_crawl.exist_hdu_account(account):
-            if not exist_user(account):
-                return None
-            else:
-                return '账号已经存在！'
-        else:
-            return '输入的账号不正确！'
-    except (ConnectionError, HTTPError, Timeout, TooManyRedirects):
-        return '连接杭电OJ失败！'
-
-
-@app.route('/api/validate_user')
-def validate_user():
-    """
-    验证用户是否合法
-    :return:
-    """
-    account = request.args.get('account', type=str)
-    res = validate_user_without_get_request(account)
-    if not res:
-        return jsonify(status=True)
-    else:
-        return jsonify(status=False, msg=res)
-
-
 @app.route('/api/login')
 def login():
     """
@@ -67,7 +36,97 @@ def login():
     if 'uid' in request.args:
         uid = request.args.get('uid', type=str)
         pwd = request.args.get('pwd', type=str)
+        if exist_uid(uid):
+            user = login_validate(uid, pwd)
+            if user:
+                session['user'] = user
+                return jsonify(status=True, user=user)
+            else:
+                return jsonify(status=False, msg="账号与密码不匹配！")
+        else:
+            return jsonify(status=False, msg="账号不存在！")
+    else:
+        user = session.get('user', None)
+        if user:
+            return jsonify(status=True, user=user)
+        else:
+            return jsonify(status=False, mgs="请先登录！")
 
+
+# def validate_account_without_get_request(account: str) -> Union[str, None]:
+#     """
+#     验证账号是否合法
+#     :return: 合法返回None，否则返回原因。
+#     """
+#     try:
+#         if hdu_crawl.exist_hdu_account(account):
+#             if not User.exist_account(account):
+#                 return None
+#             else:
+#                 return '账号已经存在！'
+#         else:
+#             return '输入的账号不正确！'
+#     except (ConnectionError, HTTPError, Timeout, TooManyRedirects):
+#         return '连接杭电OJ失败！'
+#
+
+@app.route('/api/put_user')
+def put_user():
+    """
+    添加或者修改用户
+    :return:
+    """
+    user = User()
+    for key in user.__dict__.keys():
+        if key in request.args.keys():
+            user.__dict__[key] = request.args.get(key)
+    if user.uid:
+        if not userDao.exist_uid(user.uid):
+            return jsonify(status=False, mgs="账号不存在！")
+    if user.account:
+        if User.exist_account(user.account):
+            return jsonify(status=False, mgs="账号已经存在！")
+        else:
+            try:
+                if not hdu_crawl.exist_hdu_account(user.account):
+                    return jsonify(status=False, mgs="账号不存在，请确认输入是否正确！")
+            except (ConnectionError, HTTPError, Timeout, TooManyRedirects):
+                return jsonify(status=False, mgs="连接HDU失败！")
+
+    if user.id:
+        current_user: Optional[User, None] = None
+        if 'admin' not in session.keys():
+            current_user = session.get('user', None)
+            if not current_user:
+                return jsonify(status=False, mgs="请先登录！")
+            else:
+                if current_user.id != user.id:
+                    return jsonify(status=False, mgs="不允许修改别人账号！")
+        user.update()
+        if current_user and current_user.id == user.id:
+            session['user'] = user
+    else:
+        user.add()
+    return jsonify(status=True)
+
+@app.route('/api/validate_user')
+def validate_user():
+    filed = request.args.get('field',type=str)
+    value = request.args.get('value')
+    
+
+# @app.route('/api/validate_user')
+# def validate_account():
+#     """
+#     验证用户是否合法
+#     :return:
+#     """
+#     account = request.args.get('account', type=str)
+#     res = validate_account_without_get_request(account)
+#     if not res:
+#         return jsonify(status=True)
+#     else:
+#         return jsonify(status=False, msg=res)
 
 
 @app.route('/api/add')
@@ -79,7 +138,7 @@ def add():
     name = request.args.get('name', type=str)
     account = request.args.get('account', type=str)
     motto = request.args.get('motto', type=str)
-    res = validate_user_without_get_request(account)
+    res = validate_account_without_get_request(account)
     if not res:
         create_user(name, account, motto)
         return jsonify(status=True)

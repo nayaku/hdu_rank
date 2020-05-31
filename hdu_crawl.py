@@ -22,7 +22,6 @@ def crawl_page(url: str, timeout: int = 8, max_retries: int = 5) -> str:
     :param timeout:
     :return:
     """
-    time.sleep(CRAWL_SLEEP_TIME)
     # headers = {'User-Agent': 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'}
     # 爬取一次就关闭连接。设置超时和最大尝试次数
     s = requests.Session()
@@ -134,5 +133,6 @@ def crawl_status() -> str:
 
 
 if __name__ == '__main__':
-    print(crawl_page('https://www.baidu.com/s?wd=%E6%90%BA%E5%8F%B7%E8%BD%AC%E7%BD%91&rsv_spt=1&rsv_iqid=0xd55a7fc00003b203&issp=1&f=8&rsv_bp=1&rsv_idx=2&ie=utf-8&tn=baiduhome_pg&rsv_dl=tb&rsv_enter=1&rsv_sug3=3&rsv_sug1=1&rsv_sug7=100&rsv_sug2=0&inputT=2390&rsv_sug4=11390'))
-    #print(exist_hdu_account("736248591"))
+    print(crawl_page(
+        'https://www.baidu.com/s?wd=%E6%90%BA%E5%8F%B7%E8%BD%AC%E7%BD%91&rsv_spt=1&rsv_iqid=0xd55a7fc00003b203&issp=1&f=8&rsv_bp=1&rsv_idx=2&ie=utf-8&tn=baiduhome_pg&rsv_dl=tb&rsv_enter=1&rsv_sug3=3&rsv_sug1=1&rsv_sug7=100&rsv_sug2=0&inputT=2390&rsv_sug4=11390'))
+    # print(exist_hdu_account("736248591"))

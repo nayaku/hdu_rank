@@ -1,7 +1,8 @@
-from typing import List, Union, Tuple
+from typing import List, Union, Tuple, Optional
 
 import pymysql
 
+import hdu_crawl
 from dao.dao import get_connect
 
 
@@ -22,12 +23,38 @@ class User:
         self.status = None
         self.html = None
 
-    def update(self) -> None:
+    @staticmethod
+    def exist_account(account: str) -> bool:
+        """
+        判断账号是否已经被占用
+        :param account:
+        :return: 被占用返回True，否则返回False
+        """
+        sql = '''SELECT 1 FROM `users` WHERE account = %s LIMIT 1'''
+        connect = get_connect()
+        with connect.cursor() as cursor:
+            cursor.execute(sql, (account,))
+            if cursor.fetchone():
+                return True
+        return False
+
+    # @staticmethod
+    # def validate_account_in_hdu(account: str) -> bool:
+    #     """
+    #     账号是否在杭电
+    #     :return:
+    #     """
+    #     if hdu_crawl.exist_hdu_account(account):
+    #         return True
+    #     else:
+    #         return False
+
+    def update(self) -> bool:
         """
         更新用户
         """
         if not self.id:
-            raise Exception("Need id when update.")
+            return False
         else:
             parameters = []
             sql_request_string = []
@@ -35,12 +62,13 @@ class User:
                 if filed[1]:
                     sql_request_string.append(str.format("`{0}`=%s", filed[0]))
                     parameters.append(filed[1])
-            sql = '''UPDATE users SET '''+','.join(sql_request_string)+''' WHERE id=%s'''
+            sql = '''UPDATE users SET ''' + ','.join(sql_request_string) + ''' WHERE id=%s'''
             parameters.append(self.id)
             connect = get_connect()
             with connect.cursor() as cursor:
                 cursor.execute(sql, tuple(parameters))
                 connect.commit()
+                return True
 
     def confirm(self) -> None:
         """
@@ -62,47 +90,45 @@ class User:
             cursor.execute(sql, (self.id,))
             connect.commit()
 
-
-def exist_user(account: str) -> bool:
-    '''
-    判断账号是否已经被占用
-    :param account:
-    :return: 被占用返回True，否则返回False
-    '''
-    sql = '''SELECT 1 FROM `users` WHERE account = %s LIMIT 1'''
-    connect = get_connect()
-    with connect.cursor() as cursor:
-        cursor.execute(sql, (account,))
-        if cursor.fetchone():
-            return True
-    return False
+    def add(self):
+        """
+        添加用户到数据库
+        :return:
+        """
+        sql = '''INSERT INTO users(uid,pwd,class_name,`name`,account,motto,html) VALUES(%s,%s,%s,%s,%s,%s,%s)'''
+        connect = get_connect()
+        with connect.cursor() as cursor:
+            cursor.execute(sql, (self.uid,self.pwd,self.class_name,self.name,self.account,self.motto,self.html))
+            connect.commit()
+            self.id = cursor.lastrowid
 
 
-def create_user(name: str, account: str, motto: str) -> User:
-    """
-    创建用户
-    :param name: 姓名
-    :param account: 账号
-    :param motto: 格言
-    :return: 成功返回User
-    """
-    user = User()
-    user.name = name
-    user.account = account
-    user.motto = motto
-    # sql = '''SELECT 1 FROM `users` WHERE account = %s LIMIT 1'''
-    connect = get_connect()
-    # with connect.cursor() as cursor:
-    #     cursor.execute(sql, (user.account,))
-    #     if cursor.fetchone():
-    #         return False
-    sql = '''INSERT INTO users(`name`,account,motto,solved_num,`status`) VALUES(%s,%s,%s,%s,%s)'''
 
-    with connect.cursor() as cursor:
-        cursor.execute(sql, (user.name, user.account, user.motto, user.solved_num, user.status))
-        connect.commit()
-        user.id = cursor.lastrowid
-    return user
+# def create_user(name: str, account: str, motto: str) -> User:
+#     """
+#     创建用户
+#     :param name: 姓名
+#     :param account: 账号
+#     :param motto: 格言
+#     :return: 成功返回User
+#     """
+#     user = User()
+#     user.name = name
+#     user.account = account
+#     user.motto = motto
+#     # sql = '''SELECT 1 FROM `users` WHERE account = %s LIMIT 1'''
+#     connect = get_connect()
+#     # with connect.cursor() as cursor:
+#     #     cursor.execute(sql, (user.account,))
+#     #     if cursor.fetchone():
+#     #         return False
+#     sql = '''INSERT INTO users(`name`,account,motto,solved_num,`status`) VALUES(%s,%s,%s,%s,%s)'''
+#
+#     with connect.cursor() as cursor:
+#         cursor.execute(sql, (user.name, user.account, user.motto, user.solved_num, user.status))
+#         connect.commit()
+#         user.id = cursor.lastrowid
+#     return user
 
 
 def get_fetching_list() -> List[User]:
@@ -129,9 +155,45 @@ def get_rank() -> Tuple[tuple]:
     获取排行榜
     :return:
     """
-    sql = '''SELECT users.`name`, users.account, users.motto, users.solved_num, users.`status`, users.id FROM users ORDER BY solved_num DESC '''
+    sql = '''SELECT users.id, users.uid, users.pwd, users.class_name, users.`name`, users.motto,users.account, users.solved_num, users.`status`, users.html FROM users'''
     connect = get_connect()
     with connect.cursor(cursor=pymysql.cursors.DictCursor) as cursor:
         cursor.execute(sql)
         rows = cursor.fetchall()
         return rows
+
+
+def login_validate(uid: str, pwd: str) -> Optional[User, None]:
+    """
+    用户登录验证
+    :param uid:
+    :param pwd:
+    :return:
+    """
+    sql = '''SELECT users.id, users.uid, users.class_name, users.`name`, users.motto, users.account, users.solved_num, users.`status`, users.html FROM users WHERE uid=%s AND pwd=%s LIMIT 1'''
+    connect = get_connect()
+    with connect.cursor() as cursor:
+        cursor.execute(sql, (uid, pwd))
+        row = cursor.fetchone()
+        if row:
+            user = User()
+            user.id, user.uid, user.class_name, user.name, user.motto, user.account, user.solved_num, user.status, user.html = row
+            return user
+        else:
+            return None
+
+
+def exist_uid(uid: str) -> None:
+    """
+    判断用户名是否存在
+    :param uid:
+    :return:
+    """
+    sql = '''SELECT 1 FROM users WHERE uid = %s LIMIT 1'''
+    connect = get_connect()
+    with connect.cursor() as cursor:
+        cursor.execute(sql, (uid,))
+        if cursor.fetchone():
+            return True
+        else:
+            return False
