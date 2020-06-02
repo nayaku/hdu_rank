@@ -97,7 +97,8 @@ uwsgi --ini uwsgi.ini
   }
 ```
 
-- ### /api/login 登录  不填写任何信息的时候，则返回当前登录信息。
+- ### /api/login 登录 
+**说明：**  不填写任何信息的时候，则返回当前登录信息。
 **参数：**
 | 字段名 | 数据类型 | 默认值 |  描   述   |
 | :----: | :------: | :----: | :--------: |
@@ -137,12 +138,13 @@ uwsgi --ini uwsgi.ini
 **响应数据：**
 ```
   {
-      "status": 操作状态 Boolean,
-      "mgs": 错误原因 (当状态为false时，拥有这个字段）string
+      status: 操作状态 Boolean,
+      mgs: 错误原因 (当状态为false时，拥有这个字段）string
   }
 ```
 
 - ### /api/validate_user 验证字段
+- **说明：**  注册的时候用来验证字段。
 **参数：**
 | 字段名 | 数据类型 | 默认值 |  描   述   |
 | :----: | :------: | :----: | :--------: |
@@ -151,8 +153,8 @@ uwsgi --ini uwsgi.ini
   **响应数据：**
 ```
   {
-      "status": 操作状态 Boolean,
-      "mgs": 错误原因 (当状态为false时，拥有这个字段）string
+      status: 操作状态 Boolean,
+      mgs: 错误原因 (当状态为false时，拥有这个字段）string
   }
 ```
 
@@ -161,8 +163,8 @@ uwsgi --ini uwsgi.ini
 **响应数据：**
 ```
   {
-      "status": 操作状态 Boolean,
-      "mgs": 错误原因 (当状态为false时，拥有这个字段）string
+      status: 操作状态 Boolean,
+      mgs: 错误原因 (当状态为false时，拥有这个字段）string
   }
 ```
 
@@ -176,12 +178,13 @@ uwsgi --ini uwsgi.ini
 **响应数据：**
 ```
   {
-      "status": 操作状态 Boolean,
-      "mgs": 错误原因 (当状态为false时，拥有这个字段）string
+      status: 操作状态 Boolean,
+      mgs: 错误原因 (当状态为false时，拥有这个字段）string
   }
 ```
 
 - ### /api/login_admin 管理员登录
+**说明：**  不填写任何信息的时候，则返回当前登录信息。
 **参数：**
 | 字段名 | 数据类型 | 默认值 |  描   述   |
 | :----: | :------: | :----: | :--------: |
@@ -190,11 +193,13 @@ uwsgi --ini uwsgi.ini
 **响应数据：**
 ```
   {
-      "status": 操作状态 Boolean,
-      "mgs": 错误原因 (当状态为false时，拥有这个字段）string,
-      "id": 管理员ID int,
-      "uid": 管理员 string,
-      "is_super": 是否可以管理其他用户 bool,
+      status: 操作状态 Boolean,
+      mgs: 错误原因 (当状态为false时，拥有这个字段）string,
+      admin:{
+          id: 管理员ID int,
+          uid: 管理员 string,
+          is_super: 是否可以管理其他用户 bool,
+      }
   }
 ```
 
@@ -203,13 +208,30 @@ uwsgi --ini uwsgi.ini
 **响应数据：**
 ```
   {
-      "status": 操作状态 Boolean,
-      "mgs": 错误原因 (当状态为false时，拥有这个字段）string,
-      [
-        "id": 管理员ID int,
-        "uid": 管理员登录账号 int,
-        "is_super": 是否可以管理其他管理员 bool
+      status: 操作状态 Boolean,
+      mgs: 错误原因 (当状态为false时，拥有这个字段）string,
+      admins:[
+      	{
+            id: 管理员ID int,
+            uid: 管理员登录账号 int,
+            is_super: 是否可以管理其他管理员 bool
+        }
       ]
+  }
+```
+
+- ### /api/validate_admin 验证字段
+- **说明：**  添加管理员的时候用来验证字段。
+**参数：**
+| 字段名 | 数据类型 | 默认值 |  描   述   |
+| :----: | :------: | :----: | :--------: |
+|  field | string |        |   字段   |
+|  value | string |        |  数值   |
+  **响应数据：**
+```
+  {
+      status: 操作状态 Boolean,
+      mgs: 错误原因 (当状态为false时，拥有这个字段）string
   }
 ```
 
@@ -219,14 +241,14 @@ uwsgi --ini uwsgi.ini
 | 字段名 | 数据类型 | 默认值 |  描   述   |
 | :----: | :------: | :----: | :--------: |
 | id	 |   unsigned int |        | ID  |
-| uid	 |   unsigned int |        | 管理员ID  |
+| uid	 |   string(16) |        | 管理员ID  |
 | is_super	 |   bool |        | 是否可以管理其他用户  |
-| pwd	 |   string |        | 密码，sha3-512(md5(原始密码))  |
+| pwd	 |   string(128) |        | 密码，sha3-512(md5(原始密码))  |
 **响应数据：**
 ```
   {
-      "status": 操作状态 Boolean,
-      "mgs": 错误原因 (当状态为false时，拥有这个字段）string,
+      status: 操作状态 Boolean,
+      mgs: 错误原因 (当状态为false时，拥有这个字段）string,
   }
 ```
 

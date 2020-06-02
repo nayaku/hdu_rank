@@ -8,7 +8,7 @@ from typing import Optional, Callable, Any, Iterable, Mapping, List, Union
 from requests import TooManyRedirects, Timeout, HTTPError
 from requests.adapters import HTTPAdapter
 
-from dao.userDao import get_fetching_list, User
+from dao.user_dao import get_fetching_list, User
 from my_setting import *
 
 import requests
