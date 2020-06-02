@@ -7,7 +7,7 @@ from flask import Flask, jsonify, request, session
 from requests import HTTPError, TooManyRedirects, Timeout
 
 import hdu_crawl
-from dao import user_dao, admin_dao
+from dao import user_dao, admin_dao, server_info
 from dao.admin_dao import Admin
 from dao.user_config import UserConfig, save_user_config
 from dao.user_dao import User, exist_account, login, exist_uid
@@ -25,7 +25,7 @@ def get_rank():
     """
     获取排行榜
     """
-    return jsonify(status=True, users=user_dao.get_rank(), notice=UserConfig.notice)
+    return jsonify(status=True, users=user_dao.get_rank(), notice=server_info.get_notice())
 
 
 @app.route('/api/login')
@@ -286,62 +286,18 @@ def put_admin():
     else:
         return jsonify(status=False, msg="请先登录！")
     return jsonify(status=True)
-    #
-    # def validate_token() -> bool:
-    #     # 允许±10s之内误差
-    #     time_token = int(time.time() / 10)
-    #     print('time:' + str(time_token))
-    #     for i in range(-1, 2, 1):
-    #         token = str(time_token + i) + my_setting.ADMIN_PASSWORD + str(time_token + i)
-    #         m2 = hashlib.sha3_512(token.encode(encoding='utf-8')).hexdigest()
-    #         print('time:' + str(time_token + i))
-    #         print('m2:' + m2)
-    #         if pwd == m2:
-    #             return True
-    #     return False
-    #
-    # if validate_token():
-    #     session['is_admin'] = True
-    #     return jsonify(status=True)
-    # else:
-    #     return jsonify(status=False, msg='密码错误！')
 
 
-@app.route('/api/logout_admin')
-def logout_admin():
-    """
-    登出管理员
-    """
-    session.clear()
+@app.route('/api/remove_admin')
+def remove_admin():
+    id = request.args.get('id', type=int)
+    admin: Optional[Admin] = session.get('admin', None)
+    if not admin:
+        return jsonify(status=False, msg="请先登录！")
+    if not admin.is_super:
+        return jsonify(status=False, msg="没有权限！")
+    admin_dao.remove_admin(id)
     return jsonify(status=True)
-
-
-@app.route('/api/confirm')
-def confirm():
-    """
-    确认用户
-    :return:
-    """
-    is_admin = session.get('is_admin', False)
-    if is_admin:
-        id = request.args.get('id', type=int)
-        user = User()
-        user.id = id
-        user.status = user.FETCHING_STATUS
-        user.confirm()
-        return jsonify(status=True)
-    else:
-        return jsonify(status=False, msg='请先登录！')
-
-
-@app.route('/api/get_login_info')
-def get_login_info():
-    """
-    获取登录信息
-    :return:
-    """
-    is_admin = session.get('is_admin', False)
-    return jsonify(status=True, is_admin=is_admin)
 
 
 @app.route('/api/crawl_start')
@@ -350,8 +306,8 @@ def crawl_start():
     开始滚版
     :return:
     """
-    is_admin = session.get('is_admin', False)
-    if is_admin:
+    admin: Admin = session.get('admin', None)
+    if admin:
         if hdu_crawl.crawl_status() == 'stopped':
             hdu_crawl.crawl_start()
             return jsonify(status=True)
@@ -367,8 +323,8 @@ def crawl_stop():
     停止滚榜
     :return:
     """
-    is_admin = session.get('is_admin', False)
-    if is_admin:
+    admin: Admin = session.get('admin', None)
+    if admin:
         if hdu_crawl.crawl_status() != 'stopped':
             hdu_crawl.crawl_stop()
             return jsonify(status=True)
@@ -393,11 +349,10 @@ def add_notice():
     添加留言
     :return:
     """
-    is_admin = session.get('is_admin', False)
-    if is_admin:
+    admin: Admin = session.get('admin', None)
+    if admin:
         notice = request.args.get('notice', type=str)
-        UserConfig.notice = notice
-        save_user_config()
+        server_info.set_notice(notice)
         return jsonify(status=True)
     else:
         return jsonify(status=False, msg='请先登录！')

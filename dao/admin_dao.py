@@ -7,7 +7,7 @@ class Admin:
     def __init__(self):
         self.id = None
         self.uid = None
-        self.is_super:Optional[bool] = None
+        self.is_super: Optional[bool] = None
         self.pwd = None
 
     def add(self):
@@ -38,6 +38,7 @@ class Admin:
         with connect.cursor() as cursor:
             cursor.execute(sql, tuple(parameters))
             connect.commit()
+
 
 def login(uid: str, pwd: str) -> Optional[Admin]:
     """
@@ -88,5 +89,16 @@ def get_admin_list() -> Tuple[tuple]:
         cursor.execute(sql)
         rows = cursor.fetchall()
         return rows
-    
-def remove
+
+
+def remove_admin(id: int):
+    """
+    删除管理员
+    :param id:
+    :return:
+    """
+    sql = '''DELETE FROM admins WHERE id=%s'''
+    connect = get_connect()
+    with connect.cursor() as cursor:
+        cursor.execute(sql, (id,))
+        connect.commit()

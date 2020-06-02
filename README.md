@@ -253,7 +253,7 @@ uwsgi --ini uwsgi.ini
 ```
 
 - ### /api/remove_admin  删除管理员
-**说明：** 必须先登录才能使用该接口。普通管理员只能删除自己，只有超级管理员才能删除其他管理员。
+**说明：** 必须先登录才能使用该接口。只有超级管理员才能删除其他管理员。
 **参数：**
 | 字段名 | 数据类型 | 默认值 |  描   述   |
 | :----: | :------: | :----: | :--------: |
@@ -261,8 +261,8 @@ uwsgi --ini uwsgi.ini
 **响应数据：**
 ```
   {
-      "status": 操作状态 Boolean,
-      "mgs": 错误原因 (当状态为false时，拥有这个字段）string
+      status: 操作状态 Boolean,
+      mgs: 错误原因 (当状态为false时，拥有这个字段）string
   }
 ```
 
@@ -272,8 +272,8 @@ uwsgi --ini uwsgi.ini
 **响应数据：**
 ```
   {
-      "status": 操作状态 Boolean,
-      "mgs": 错误原因 (当状态为false时，拥有这个字段）string
+      status: 操作状态 Boolean,
+      mgs: 错误原因 (当状态为false时，拥有这个字段）string
   }
 ```
 
@@ -283,8 +283,8 @@ uwsgi --ini uwsgi.ini
 **响应数据：**
 ```
   {
-      "status": 操作状态 Boolean,
-      "mgs": 错误原因 (当状态为false时，拥有这个字段）string
+      status: 操作状态 Boolean,
+      mgs: 错误原因 (当状态为false时，拥有这个字段）string
   }
 ```
 
@@ -293,9 +293,9 @@ uwsgi --ini uwsgi.ini
 **响应数据：**
 ```
   {
-      "status": 操作状态 Boolean,
-      "mgs": 错误原因 (当状态为false时，拥有这个字段）string
-      "crawl_status": 爬虫状态 union("runable","running","sleeping","stopped")
+      status: 操作状态 Boolean,
+      mgs: 错误原因 (当状态为false时，拥有这个字段）string
+      crawl_status: 爬虫状态 union("runable","running","sleeping","stopped")
   }
   
 ```
@@ -308,8 +308,8 @@ uwsgi --ini uwsgi.ini
 **响应数据：**
 ```
   {
-      "status": 操作状态 Boolean,
-      "mgs": 错误原因 (当状态为false时，拥有这个字段）string
+      status: 操作状态 Boolean,
+      mgs: 错误原因 (当状态为false时，拥有这个字段）string
   }
   
 ```
