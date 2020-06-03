@@ -49,27 +49,11 @@ def login():
     else:
         user = session.get('user', None)
         if user:
-            return jsonify(status=True, user=user.__dict__)
+            return jsonify(status=True, user=user)
         else:
             return jsonify(status=False, mgs="请先登录！")
 
 
-# def validate_account_without_get_request(account: str) -> Union[str, None]:
-#     """
-#     验证账号是否合法
-#     :return: 合法返回None，否则返回原因。
-#     """
-#     try:
-#         if hdu_crawl.exist_hdu_account(account):
-#             if not User.exist_account(account):
-#                 return None
-#             else:
-#                 return '账号已经存在！'
-#         else:
-#             return '输入的账号不正确！'
-#     except (ConnectionError, HTTPError, Timeout, TooManyRedirects):
-#         return '连接杭电OJ失败！'
-#
 def __validate_user(field: str, value):
     """
     验证字段
@@ -82,19 +66,19 @@ def __validate_user(field: str, value):
             return jsonify(status=False, mgs="账号名长度不正确！")
         if user_dao.exist_uid(value):
             return jsonify(status=False, mgs="账号已被占用！")
-    if field == 'pwd':
+    elif field == 'pwd':
         if value is None or len(value) > 128:
             return jsonify(status=False, mgs="密码长度不正确！")
-    if field == 'class_name':
+    elif field == 'class_name':
         if len(value) > 24:
             return jsonify(status=False, mgs="班级名长度不正确！")
-    if field == 'name':
+    elif field == 'name':
         if value is None or len(value) > 16:
             return jsonify(status=False, mgs="姓名长度不正确！")
-    if field == 'motto':
+    elif field == 'motto':
         if len(value) > 16:
             return jsonify(status=False, mgs="姓名长度不正确！")
-    if field == 'account':
+    elif field == 'account':
         if len(value) > 64:
             return jsonify(status=False, mgs="杭电账号名过长！")
         if exist_account(value):
@@ -119,6 +103,8 @@ def put_user():
     for key in user.__dict__.keys():
         if key in request.args.keys():
             user.__dict__[key] = request.args.get(key)
+            if key == 'id':
+                user.id = int(user.id)
 
     if user.id:
         for item in user.__dict__.items():
@@ -132,7 +118,7 @@ def put_user():
             return jsonify(status=False, msg="没有权限！")
         user.update()
         if current_user and current_user['id'] == user.id:
-            session['user'] = user
+            session['user'] = user.__dict__
     else:
         for item in user.__dict__.items():
             res = __validate_user(item[0], item[1])
@@ -163,8 +149,8 @@ def logout():
     return jsonify(status=True)
 
 
-@app.route('/api/remove')
-def remove():
+@app.route('/api/remove_user')
+def remove_user():
     """
     删除用户
     """
@@ -173,14 +159,16 @@ def remove():
     user.id = id
 
     admin = session.get('admin', None)
+    current_user = session.get('user', None)
     if not admin:
-        current_user: Optional[User, None] = session.get('user', None)
         if not current_user:
             return jsonify(status=False, msg='请先登录！')
         else:
-            if current_user.id != user.id:
+            if current_user['id'] != user.id:
                 return jsonify(status=False, msg='不能删除别人账号！')
     user.remove()
+    if not admin and current_user['id'] == user.id:
+        session.clear()
     return jsonify(status=True)
 
 
@@ -215,7 +203,7 @@ def list_admin():
     """
     admin: Optional[Admin, None]
     admin = session.get('admin', None)
-    if admin and admin.is_super:
+    if admin and admin['is_super']:
         return jsonify(status=True, admins=admin_dao.get_admin_list())
     else:
         return jsonify(status=False, msg='请先登录！')
@@ -234,7 +222,7 @@ def __validate_admin(field: str, value):
 
 @app.route('/api/validate_admin')
 def validate_admin():
-    admin: Admin = session.get('admin', None)
+    admin = session.get('admin', None)
     if admin:
         filed = request.args.get('field', type=str)
         value = request.args.get('value')
@@ -249,16 +237,20 @@ def validate_admin():
 
 @app.route('/api/put_admin')
 def put_admin():
-    current_admin: Admin = session.get('admin', None)
+    current_admin = session.get('admin', None)
     admin = Admin()
     for key in admin.__dict__.keys():
         if key in request.args.keys():
             admin.__dict__[key] = request.args.get(key)
+            if key == 'id':
+                admin.id = int(admin.id)
+            elif key == 'is_super':
+                admin.is_super = admin.is_super == 'True'
 
     if current_admin:
         if admin.id:
             # 更新
-            if admin.id == current_admin.id or current_admin.is_super:
+            if admin.id == current_admin['id'] or current_admin['is_super']:
                 res = __validate_admin('uid', admin.uid) or __validate_admin('pwd', admin.pwd)
                 if res:
                     return res
@@ -283,10 +275,10 @@ def put_admin():
 @app.route('/api/remove_admin')
 def remove_admin():
     id = request.args.get('id', type=int)
-    admin: Optional[Admin] = session.get('admin', None)
+    admin = session.get('admin', None)
     if not admin:
         return jsonify(status=False, msg="请先登录！")
-    if not admin.is_super:
+    if not admin['is_super']:
         return jsonify(status=False, msg="没有权限！")
     admin_dao.remove_admin(id)
     return jsonify(status=True)
@@ -298,7 +290,7 @@ def crawl_start():
     开始滚版
     :return:
     """
-    admin: Admin = session.get('admin', None)
+    admin = session.get('admin', None)
     if admin:
         if hdu_crawl.crawl_status() == 'stopped':
             hdu_crawl.crawl_start()
@@ -315,7 +307,7 @@ def crawl_stop():
     停止滚榜
     :return:
     """
-    admin: Admin = session.get('admin', None)
+    admin = session.get('admin', None)
     if admin:
         if hdu_crawl.crawl_status() != 'stopped':
             hdu_crawl.crawl_stop()

@@ -22,6 +22,7 @@ class User:
         self.status = None
         self.html = None
 
+
     # @staticmethod
     # def validate_account_in_hdu(account: str) -> bool:
     #     """
