@@ -38,10 +38,10 @@ def login():
         uid = request.args.get('uid', type=str)
         pwd = request.args.get('pwd', type=str)
         if exist_uid(uid):
-            user = login(uid, pwd)
+            user = user_dao.login(uid, pwd)
             if user:
-                session['user'] = user
-                return jsonify(status=True, user=user)
+                session['user'] = user.__dict__
+                return jsonify(status=True, user=user.__dict__)
             else:
                 return jsonify(status=False, msg="账号与密码不匹配！")
         else:
@@ -49,7 +49,7 @@ def login():
     else:
         user = session.get('user', None)
         if user:
-            return jsonify(status=True, user=user)
+            return jsonify(status=True, user=user.__dict__)
         else:
             return jsonify(status=False, mgs="请先登录！")
 
@@ -78,17 +78,6 @@ def __validate_user(field: str, value):
     :return:如果成功则返回None，否则返回json。
     """
     if field == 'uid':
-        if value:
-            current_user: Optional[User, None] = None
-            if 'admin' not in session.keys():
-                current_user = session.get('user', None)
-                if not current_user:
-                    return jsonify(status=False, mgs="请先登录！")
-                else:
-                    if current_user.id != value:
-                        return jsonify(status=False, mgs="不允许修改别人账号！")
-
-    if field == 'uid':
         if value is None or len(value) > 16:
             return jsonify(status=False, mgs="账号名长度不正确！")
         if user_dao.exist_uid(value):
@@ -109,11 +98,11 @@ def __validate_user(field: str, value):
         if len(value) > 64:
             return jsonify(status=False, mgs="杭电账号名过长！")
         if exist_account(value):
-            return jsonify(status=False, mgs="账号已经存在！")
+            return jsonify(status=False, mgs="杭电账号已经被占用！")
         else:
             try:
                 if not hdu_crawl.exist_hdu_account(value):
-                    return jsonify(status=False, mgs="账号不存在，请确认输入是否正确！")
+                    return jsonify(status=False, mgs="杭电账号不存在，请确认输入是否正确！")
             except (ConnectionError, HTTPError, Timeout, TooManyRedirects):
                 return jsonify(status=False, mgs="连接HDU失败！")
 
@@ -132,17 +121,20 @@ def put_user():
             user.__dict__[key] = request.args.get(key)
 
     if user.id:
-        for item in user.__dict__:
+        for item in user.__dict__.items():
             if item[1]:
                 res = __validate_user(item[0], item[1])
                 if res:
                     return res
-        user.update()
+        admin = session.get('admin', None)
         current_user = session.get('user', None)
-        if current_user and current_user.id == user.id:
+        if not admin and current_user['id'] != user.id:
+            return jsonify(status=False, msg="没有权限！")
+        user.update()
+        if current_user and current_user['id'] == user.id:
             session['user'] = user
     else:
-        for item in user.__dict__:
+        for item in user.__dict__.items():
             res = __validate_user(item[0], item[1])
             if res:
                 return res
@@ -277,7 +269,7 @@ def put_admin():
             # 创建
             if not admin.is_super:
                 return jsonify(status=False, msg="没有权限！")
-            for item in admin.__dict__:
+            for item in admin.__dict__.items():
                 if item[1]:
                     res = __validate_admin(item[0], item[1])
                     if res:
@@ -349,7 +341,7 @@ def add_notice():
     添加留言
     :return:
     """
-    admin: Admin = session.get('admin', None)
+    admin = session.get('admin', None)
     if admin:
         notice = request.args.get('notice', type=str)
         server_info.set_notice(notice)

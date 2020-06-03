@@ -97,7 +97,7 @@ uwsgi --ini uwsgi.ini
   }
 ```
 
-- ### /api/login 登录 
+- ### /api/login 用户登录 
 **说明：**  不填写任何信息的时候，则返回当前登录信息。
 **参数：**
 | 字段名 | 数据类型 | 默认值 |  描   述   |
@@ -129,7 +129,7 @@ uwsgi --ini uwsgi.ini
 | :----: | :------: | :----: | :--------: |
 | id	 | int |        | 用户唯一标识  |
 | uid	 | string(16) |        | 登录账号  |
-| pwd	 | string(16) |    ""  | 密码 |
+| pwd	 | string(16) |    ""  | 密码，sha3-512(md5(原始密码)) |
 | class_name	 | string(24) |    ""    | 班级 |
 | name	 | string(16) |        | 姓名  |
 | account |  string(64)  |        |  杭电账号  |

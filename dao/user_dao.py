@@ -73,7 +73,7 @@ class User:
             cursor.execute(sql, (self.id,))
             connect.commit()
 
-    def add(self) -> bool:
+    def add(self):
         """
         添加用户到数据库
         :return:
@@ -104,33 +104,6 @@ def exist_account(account: str) -> bool:
     return False
 
 
-# def create_user(name: str, account: str, motto: str) -> User:
-#     """
-#     创建用户
-#     :param name: 姓名
-#     :param account: 账号
-#     :param motto: 格言
-#     :return: 成功返回User
-#     """
-#     user = User()
-#     user.name = name
-#     user.account = account
-#     user.motto = motto
-#     # sql = '''SELECT 1 FROM `users` WHERE account = %s LIMIT 1'''
-#     connect = get_connect()
-#     # with connect.cursor() as cursor:
-#     #     cursor.execute(sql, (user.account,))
-#     #     if cursor.fetchone():
-#     #         return False
-#     sql = '''INSERT INTO users(`name`,account,motto,solved_num,`status`) VALUES(%s,%s,%s,%s,%s)'''
-#
-#     with connect.cursor() as cursor:
-#         cursor.execute(sql, (user.name, user.account, user.motto, user.solved_num, user.status))
-#         connect.commit()
-#         user.id = cursor.lastrowid
-#     return user
-
-
 def get_fetching_list() -> List[User]:
     """
     所有等待获取的用户列表
@@ -155,7 +128,8 @@ def get_rank() -> Tuple[tuple]:
     获取排行榜
     :return:
     """
-    sql = '''SELECT users.id, users.uid, users.pwd, users.class_name, users.`name`, users.motto,users.account, users.solved_num, users.`status`, users.html FROM users'''
+    sql = '''SELECT users.id, users.uid, users.pwd, users.class_name, users.`name`, users.motto,users.account, \
+    users.solved_num, users.`status`, users.html FROM users'''
     connect = get_connect()
     with connect.cursor(cursor=pymysql.cursors.DictCursor) as cursor:
         cursor.execute(sql)
@@ -170,7 +144,8 @@ def login(uid: str, pwd: str) -> Optional[User]:
     :param pwd:
     :return:
     """
-    sql = '''SELECT users.id, users.uid, users.class_name, users.`name`, users.motto, users.account, users.solved_num, users.`status`, users.html FROM users WHERE uid=%s AND pwd=%s LIMIT 1'''
+    sql = '''SELECT users.id, users.uid, users.class_name, users.`name`, users.motto, users.account, users.solved_num \
+    , users.`status`, users.html FROM users WHERE uid=%s AND pwd=%s LIMIT 1'''
     connect = get_connect()
     with connect.cursor() as cursor:
         cursor.execute(sql, (uid, pwd))

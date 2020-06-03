@@ -93,46 +93,45 @@ class CrawlThread(Thread):
             users = get_fetching_list()
             for user in users:
                 try:
+                    if self.__stop_signal:
+                        self.status = 'stopped'
+                        return
                     crawl_user_info(user)
                     if self.__stop_signal:
                         self.status = 'stopped'
                         return
+                    time.sleep(CRAWL_SLEEP_TIME)
                 except Exception as e:
                     traceback.print_exc()
 
             self.status = 'sleeping'
-            time.sleep(MAIN_LOOP_INTERVAL)
+            for i in range(1, MAIN_LOOP_INTERVAL):
+                if self.__stop_signal:
+                    self.status = 'stopped'
+                    return
+                time.sleep(1)
 
     def stop(self):
         self.__stop_signal = True
 
 
 # 线程池
-crawl_pool: List[CrawlThread] = []
+crawl_thread: Optional[CrawlThread] = None
 
 
 def crawl_start() -> None:
-    if len(crawl_pool) == 0:
-        crawl_pool.append(CrawlThread())
-    else:
-        crawl_pool[0] = CrawlThread()
-    crawl_pool[0].setDaemon(True)
-    crawl_pool[0].start()
+    global crawl_thread
+    crawl_thread = CrawlThread()
+    crawl_thread.setDaemon(True)
+    crawl_thread.start()
 
 
 def crawl_stop() -> None:
-    if len(crawl_pool) > 0:
-        crawl_pool[0].stop()
+    crawl_thread.stop()
 
 
 def crawl_status() -> str:
-    if len(crawl_pool) > 0:
-        return crawl_pool[0].status
+    if crawl_thread:
+        return crawl_thread.status
     else:
         return 'stopped'
-
-
-if __name__ == '__main__':
-    print(crawl_page(
-        'https://www.baidu.com/s?wd=%E6%90%BA%E5%8F%B7%E8%BD%AC%E7%BD%91&rsv_spt=1&rsv_iqid=0xd55a7fc00003b203&issp=1&f=8&rsv_bp=1&rsv_idx=2&ie=utf-8&tn=baiduhome_pg&rsv_dl=tb&rsv_enter=1&rsv_sug3=3&rsv_sug1=1&rsv_sug7=100&rsv_sug2=0&inputT=2390&rsv_sug4=11390'))
-    # print(exist_hdu_account("736248591"))
