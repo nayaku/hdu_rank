@@ -1,5 +1,7 @@
 from typing import Optional, List, Tuple
 
+import pymysql
+
 from dao.dao import get_connect
 
 
@@ -85,7 +87,7 @@ def get_admin_list() -> Tuple[tuple]:
     sql = '''SELECT admins.id, admins.uid, admins.is_super FROM admins'''
     connect = get_connect()
 
-    with connect.cursor() as cursor:
+    with connect.cursor(cursor=pymysql.cursors.DictCursor) as cursor:
         cursor.execute(sql)
         rows = cursor.fetchall()
         return rows

@@ -134,6 +134,7 @@ uwsgi --ini uwsgi.ini
 | name	 | string(16) |        | 姓名  |
 | account |  string(64)  |        |  杭电账号  |
 |  motto | string(255) |        |   格言   |
+|  status | 'unchecked','fetching','active' |        |   状态，只有管理层才能修改   |
 |  html | string |        |   自定义代码   |
 **响应数据：**
 ```
@@ -220,7 +221,7 @@ uwsgi --ini uwsgi.ini
   }
 ```
 
-- ### /api/validate_admin 验证字段
+- ### /api/validate_admin 验证管理员字段
 - **说明：**  添加管理员的时候用来验证字段。
 **参数：**
 | 字段名 | 数据类型 | 默认值 |  描   述   |

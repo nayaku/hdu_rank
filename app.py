@@ -89,7 +89,10 @@ def __validate_user(field: str, value):
                     return jsonify(status=False, mgs="杭电账号不存在，请确认输入是否正确！")
             except (ConnectionError, HTTPError, Timeout, TooManyRedirects):
                 return jsonify(status=False, mgs="连接HDU失败！")
-
+    elif field == 'status':
+        if value:
+            if value not in (User.UNCHECKED_STATUS, User.FETCHING_STATUS, User.ACTIVE_STATUS):
+                return jsonify(status=False, mgs="不正确的状态！")
     return None
 
 
@@ -115,6 +118,8 @@ def put_user():
         admin = session.get('admin', None)
         current_user = session.get('user', None)
         if not admin and current_user['id'] != user.id:
+            return jsonify(status=False, msg="没有权限！")
+        if user.status and not admin:
             return jsonify(status=False, msg="没有权限！")
         user.update()
         if current_user and current_user['id'] == user.id:
@@ -188,11 +193,13 @@ def login_admin():
         admin = admin_dao.login(uid, pwd)
         if not admin:
             return jsonify(status=False, msg='密码错误！')
+        session['admin'] = admin.__dict__
+        return jsonify(status=True, admin=admin.__dict__)
     else:
         admin = session.get('admin', None)
         if not admin:
             return jsonify(status=False, msg='请先登录！')
-    return jsonify(status=True, admin=admin)
+        return jsonify(status=True, admin=admin)
 
 
 @app.route('/api/list_admin')
@@ -203,8 +210,11 @@ def list_admin():
     """
     admin: Optional[Admin, None]
     admin = session.get('admin', None)
-    if admin and admin['is_super']:
-        return jsonify(status=True, admins=admin_dao.get_admin_list())
+    if admin:
+        if admin['is_super']:
+            return jsonify(status=True, admins=admin_dao.get_admin_list())
+        else:
+            return jsonify(status=False, msg="没有权限！")
     else:
         return jsonify(status=False, msg='请先登录！')
 
@@ -226,7 +236,7 @@ def validate_admin():
     if admin:
         filed = request.args.get('field', type=str)
         value = request.args.get('value')
-        val_res = __validate_user(filed, value)
+        val_res = __validate_admin(filed, value)
         if val_res:
             return val_res
         else:
@@ -259,7 +269,7 @@ def put_admin():
                 return jsonify(status=False, msg="没有权限！")
         else:
             # 创建
-            if not admin.is_super:
+            if not current_admin['is_super']:
                 return jsonify(status=False, msg="没有权限！")
             for item in admin.__dict__.items():
                 if item[1]:
@@ -280,6 +290,8 @@ def remove_admin():
         return jsonify(status=False, msg="请先登录！")
     if not admin['is_super']:
         return jsonify(status=False, msg="没有权限！")
+    if id == admin['id']:
+        return jsonify(status=False, msg="请勿删除自己！")
     admin_dao.remove_admin(id)
     return jsonify(status=True)
 

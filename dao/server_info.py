@@ -18,8 +18,8 @@ def set_notice(notice: str):
     设置公告
     :return:
     """
-    sql = '''UPDATE server_infos SET notice=%s '''
+    sql = '''UPDATE server_infos SET notice=%s WHERE id=1'''
     connect = get_connect()
     with connect.cursor() as cursor:
-        cursor.execute(sql, tuple(notice))
+        cursor.execute(sql, (notice,))
         connect.commit()
