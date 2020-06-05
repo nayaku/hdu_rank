@@ -1,14 +1,23 @@
 <template>
   <div id="app">
+    <!-- 导航栏  -->
     <b-navbar toggleable="lg" type="dark" variant="primary">
       <b-navbar-brand>HDU排行榜</b-navbar-brand>
+      <b-navbar-brand>
+        <small>
+          <a href="https://github.com/736248591/hdu_rank" style="color: rgba(255,255,255,0.4)">GitHub地址</a>
+        </small>
+      </b-navbar-brand>
       <b-navbar-nav class="ml-auto">
         <b-nav-item-dropdown text="用户" right>
-          <b-dropdown-item>登录</b-dropdown-item>
-          <b-dropdown-item>注册</b-dropdown-item>
+          <template v-if="!user&&!admin">
+            <b-dropdown-item>登录</b-dropdown-item>
+            <b-dropdown-item>注册</b-dropdown-item>
+          </template>
         </b-nav-item-dropdown>
       </b-navbar-nav>
     </b-navbar>
+
     <!-- 公告 -->
     <div class="py-4">
       <b-container>
@@ -16,28 +25,29 @@
           <vue-markdown :source="notice"></vue-markdown>
         </b-row>
       </b-container>
-<!--      <div class="container">-->
-<!--        <div class="row">-->
-<!--          <div class="col-md-12">-->
-<!--            <vue-markdown :source="notice"></vue-markdown>-->
-<!--            &lt;!&ndash;            <p class="lead">&ndash;&gt;-->
-<!--            &lt;!&ndash;              <span style="font-size: x-large;font-weight: bold; word-wrap:break-word" v-html="notice">&ndash;&gt;-->
-<!--            &lt;!&ndash;              </span>&ndash;&gt;-->
+      <!--      <div class="container">-->
+      <!--        <div class="row">-->
+      <!--          <div class="col-md-12">-->
+      <!--            <vue-markdown :source="notice"></vue-markdown>-->
+      <!--            &lt;!&ndash;            <p class="lead">&ndash;&gt;-->
+      <!--            &lt;!&ndash;              <span style="font-size: x-large;font-weight: bold; word-wrap:break-word" v-html="notice">&ndash;&gt;-->
+      <!--            &lt;!&ndash;              </span>&ndash;&gt;-->
 
-<!--            &lt;!&ndash;            </p>&ndash;&gt;-->
-<!--          </div>-->
-<!--        </div>-->
-<!--      </div>-->
+      <!--            &lt;!&ndash;            </p>&ndash;&gt;-->
+      <!--          </div>-->
+      <!--        </div>-->
+      <!--      </div>-->
     </div>
-<!--    <div class="py-5">-->
-<!--      <b-container>-->
-<!--        <b-row>-->
-<!--          <b-col>-->
-<!--            <h1 class="text-center shadow-none"><b class="" style="    font-weight: bold;">HDU排行榜</b></h1>-->
-<!--          </b-col>-->
-<!--        </b-row>-->
-<!--      </b-container>-->
-<!--    </div>-->
+    <!--    <div class="py-5">-->
+    <!--      <b-container>-->
+    <!--        <b-row>-->
+    <!--          <b-col>-->
+    <!--            <h1 class="text-center shadow-none"><b class="" style="    font-weight: bold;">HDU排行榜</b></h1>-->
+    <!--          </b-col>-->
+    <!--        </b-row>-->
+    <!--      </b-container>-->
+    <!--    </div>-->
+    <!-- 排行榜 -->
     <div class="py-2">
       <b-container>
         <b-row>
@@ -48,61 +58,61 @@
           </b-table>
         </b-row>
       </b-container>
-      <div class="container">
-        <div class="row">
-          <div class="col-md-12">
-            <div class="table-responsive">
-              <table class="table">
-                <caption>状态：<span id="status">{{crawlStatus}}
-                  <i :class="'fa d-inline fa-circle'+crawlStatusClass"></i>
-                  <template v-if="isAdmin">
-                      <b-button @click="beginCrawl" variant="link" v-if="crawlStatus==='stopped'">启动</b-button>
-                    <b-button @click="stopCrawl" variant="link" v-else>停止</b-button>
-                  </template>
-                </span></caption>
-                <thead>
-                <tr>
-                  <th>#</th>
-                  <th>姓名</th>
-                  <th>账号</th>
-                  <th>格言</th>
-                  <th>题数</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="(user,index) in users" v-bind:key="user['id']">
-                  <td>{{index+1}}
-                    <i class="fa d-inline fa-lg fa-times text-danger" v-if="isAdmin"
-                       @click="removeUser(user['id'])"></i>
-                  </td>
-                  <td class="table-text-wrap">{{user['name']}}</td>
-                  <td class="table-text-wrap">{{user['account']}}</td>
-                  <td class="table-text-wrap">{{user['motto']}}</td>
-                  <td>
-                    <template v-if="user['status']==='unchecked'">
-                      <span class="text-warning">待确认</span>
-                      <i class="fa d-inline fa-lg fa-check text-success" @click="confirmUser(user['id'])"
-                         v-if="isAdmin"></i>
-                    </template>
-                    <template v-else>{{user['solved_num']}}</template>
-                  </td>
-                </tr>
-                </tbody>
-              </table>
-              <div>
-                <b-button variant="link" @click="addUserModalShow = true">
-                  <i class="fa fa-plus fa-fw fa-lg py-1"></i>
-                  <span style="font-size:110%">添加账号</span></b-button>
-              </div>
-              <div v-if="isAdmin">
-                <b-button variant="link" @click="addNoticeModalShow = true">
-                  <i class="fa fa-plus fa-fw fa-lg py-1"></i>
-                  <span style="font-size:110%">添加公告</span></b-button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!--      <div class="container">-->
+      <!--        <div class="row">-->
+      <!--          <div class="col-md-12">-->
+      <!--            <div class="table-responsive">-->
+      <!--              <table class="table">-->
+      <!--                <caption>状态：<span id="status">{{crawlStatus}}-->
+      <!--                  <i :class="'fa d-inline fa-circle'+crawlStatusClass"></i>-->
+      <!--                  <template v-if="isAdmin">-->
+      <!--                      <b-button @click="beginCrawl" variant="link" v-if="crawlStatus==='stopped'">启动</b-button>-->
+      <!--                    <b-button @click="stopCrawl" variant="link" v-else>停止</b-button>-->
+      <!--                  </template>-->
+      <!--                </span></caption>-->
+      <!--                <thead>-->
+      <!--                <tr>-->
+      <!--                  <th>#</th>-->
+      <!--                  <th>姓名</th>-->
+      <!--                  <th>账号</th>-->
+      <!--                  <th>格言</th>-->
+      <!--                  <th>题数</th>-->
+      <!--                </tr>-->
+      <!--                </thead>-->
+      <!--                <tbody>-->
+      <!--                <tr v-for="(user,index) in users" v-bind:key="user['id']">-->
+      <!--                  <td>{{index+1}}-->
+      <!--                    <i class="fa d-inline fa-lg fa-times text-danger" v-if="isAdmin"-->
+      <!--                       @click="removeUser(user['id'])"></i>-->
+      <!--                  </td>-->
+      <!--                  <td class="table-text-wrap">{{user['name']}}</td>-->
+      <!--                  <td class="table-text-wrap">{{user['account']}}</td>-->
+      <!--                  <td class="table-text-wrap">{{user['motto']}}</td>-->
+      <!--                  <td>-->
+      <!--                    <template v-if="user['status']==='unchecked'">-->
+      <!--                      <span class="text-warning">待确认</span>-->
+      <!--                      <i class="fa d-inline fa-lg fa-check text-success" @click="confirmUser(user['id'])"-->
+      <!--                         v-if="isAdmin"></i>-->
+      <!--                    </template>-->
+      <!--                    <template v-else>{{user['solved_num']}}</template>-->
+      <!--                  </td>-->
+      <!--                </tr>-->
+      <!--                </tbody>-->
+      <!--              </table>-->
+      <!--              <div>-->
+      <!--                <b-button variant="link" @click="addUserModalShow = true">-->
+      <!--                  <i class="fa fa-plus fa-fw fa-lg py-1"></i>-->
+      <!--                  <span style="font-size:110%">添加账号</span></b-button>-->
+      <!--              </div>-->
+      <!--              <div v-if="isAdmin">-->
+      <!--                <b-button variant="link" @click="addNoticeModalShow = true">-->
+      <!--                  <i class="fa fa-plus fa-fw fa-lg py-1"></i>-->
+      <!--                  <span style="font-size:110%">添加公告</span></b-button>-->
+      <!--              </div>-->
+      <!--            </div>-->
+      <!--          </div>-->
+      <!--        </div>-->
+      <!--      </div>-->
     </div>
 
     <div class="py-3">
@@ -119,10 +129,29 @@
       </div>
     </div>
 
-    <!-- 添加用户 -->
-    <b-modal id="addUserModal" title="添加用户" ok-title="确认" cancel-title="取消" @ok="addUser"
+    <!-- 注册 -->
+    <b-modal id="addUserModal" title="注册" ok-title="确认" cancel-title="取消" @ok="addUser"
              :ok-disabled="addUserModalOkDisabled" v-model="addUserModalShow">
       <b-form @submit="addUser">
+        <b-form-group
+          label="登录账号">
+          <b-form-input
+            :state="formUidState"
+            aria-describedby="formUidFeedback"
+            placeholder="请在这里输入您的登录账号名"
+            required
+            trim
+            type="text"
+            v-model="formUid">
+          </b-form-input>
+          <b-form-invalid-feedback id="formUidFeedback">
+            登录账号长度一个在3-16之间。
+          </b-form-invalid-feedback>
+        </b-form-group>
+        <b-form-group
+        label="密码">
+
+        </b-form-group>
         <b-form-group
           label="姓名：">
           <b-form-input
@@ -245,6 +274,12 @@
         users: [],
         user: null,
         admin: null,
+        formUid: '',
+        formUidAvailable: false,
+        formUidServerFeedbackString: '当失去焦点时将验证账号',
+        formPwd: '',
+        formConfirmPwd: '',
+        formClassName: '',
         formUserName: '',
         formAccount: '',
         formAccountAvailable: false,
@@ -419,6 +454,14 @@
     computed: {
       crawlStatusClass () {
         return this.crawlStatus === 'stopped' ? 'text-primary' : 'text-danger'
+      },
+      formUidState () {
+        return this.formUid.length > 1 && this.formUid.length <= 16
+      },
+      formPwdState () {
+        let regNumber = /\d+/
+        let regAlpha = /[a-zA-Z]+/
+        return this.formPwd.length > 3 && regNumber.test(this.formPwd) && regAlpha.test(this.formPwd)
       },
       formUserNameState () {
         return this.formUserName.length > 1 && this.formUserName.length <= 16
