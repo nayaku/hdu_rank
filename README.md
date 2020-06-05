@@ -32,7 +32,7 @@ cd lnmp1.6beta
 # 安装screen和git（如果已经安装可以跳过）
 yum install screen git vim -y
 # 安装所需的PIP库
-pip3 install flask pymysql requests uWSGI aiohttp
+pip3 install flask pymysql requests uWSGI flask_cors
 # 增加hdurank的用户名和组
 /usr/sbin/groupadd hdurank
 /usr/sbin/useradd -g hdurank hdurank
@@ -81,19 +81,31 @@ uwsgi --ini uwsgi.ini
   {
       status: 操作状态 Boolean,
       msg: 错误原因 （当状态为false时，拥有这个字段）string,
+      notice: 公告 string,
       users: 用户列表（当状态为True时，拥有这个字段）
       [
           {
               id: 用户ID unsigned int,
               uid 登录账号 string,
-              class 班级 string,
+              class_name 班级 string,
               name 姓名 string,
               motto 格言 string,
               account 账号 string,
               solved_num 题数 int,
               status 状态 union("unchecked","fetching","active")
           }
-      ]
+      ],
+      user:{
+          id 用户ID unsigned int,
+          uid 登录账号 string,
+          class 班级 string,
+          name 姓名 string,
+          motto 格言 string,
+          account 账号 string,
+          solved_num 题数 int,
+          status 状态 union("unchecked","fetching","active"),
+          html 自定义页面代码 string
+      }
   }
 ```
 
@@ -110,15 +122,22 @@ uwsgi --ini uwsgi.ini
       status: 操作状态 Boolean,
       mgs: 错误原因 (当状态为false时，拥有这个字段）string，
       // 当登录成功时候显示以下信息
-      id 用户ID unsigned int,
-      uid 登录账号 string,
-      class 班级 string,
-      name 姓名 string,
-      motto 格言 string,
-      account 账号 string,
-      solved_num 题数 int,
-      status 状态 union("unchecked","fetching","active"),
-      html 自定义页面代码 string
+      user:{
+          id 用户ID unsigned int,
+          uid 登录账号 string,
+          class 班级 string,
+          name 姓名 string,
+          motto 格言 string,
+          account 账号 string,
+          solved_num 题数 int,
+          status 状态 union("unchecked","fetching","active"),
+          html 自定义页面代码 string
+      },
+      admin:{
+          id: 管理员ID int,
+          uid: 管理员 string,
+          is_super: 是否可以管理其他用户 bool,
+      }
   }
 ```
 

@@ -1,15 +1,53 @@
 <template>
   <div id="app">
-    <div class="py-5">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-12">
-            <h1 class="text-center shadow-none"><b class="" style="    font-weight: bold;">HDU排行榜</b></h1>
-          </div>
-        </div>
-      </div>
+    <b-navbar toggleable="lg" type="dark" variant="primary">
+      <b-navbar-brand>HDU排行榜</b-navbar-brand>
+      <b-navbar-nav class="ml-auto">
+        <b-nav-item-dropdown text="用户" right>
+          <b-dropdown-item>登录</b-dropdown-item>
+          <b-dropdown-item>注册</b-dropdown-item>
+        </b-nav-item-dropdown>
+      </b-navbar-nav>
+    </b-navbar>
+    <!-- 公告 -->
+    <div class="py-4">
+      <b-container>
+        <b-row>
+          <vue-markdown :source="notice"></vue-markdown>
+        </b-row>
+      </b-container>
+<!--      <div class="container">-->
+<!--        <div class="row">-->
+<!--          <div class="col-md-12">-->
+<!--            <vue-markdown :source="notice"></vue-markdown>-->
+<!--            &lt;!&ndash;            <p class="lead">&ndash;&gt;-->
+<!--            &lt;!&ndash;              <span style="font-size: x-large;font-weight: bold; word-wrap:break-word" v-html="notice">&ndash;&gt;-->
+<!--            &lt;!&ndash;              </span>&ndash;&gt;-->
+
+<!--            &lt;!&ndash;            </p>&ndash;&gt;-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
     </div>
+<!--    <div class="py-5">-->
+<!--      <b-container>-->
+<!--        <b-row>-->
+<!--          <b-col>-->
+<!--            <h1 class="text-center shadow-none"><b class="" style="    font-weight: bold;">HDU排行榜</b></h1>-->
+<!--          </b-col>-->
+<!--        </b-row>-->
+<!--      </b-container>-->
+<!--    </div>-->
     <div class="py-2">
+      <b-container>
+        <b-row>
+          <b-table :items="users" :fields="user_fields">
+            <template v-slot:cell(index)="data">
+              {{data.index +1 }}
+            </template>
+          </b-table>
+        </b-row>
+      </b-container>
       <div class="container">
         <div class="row">
           <div class="col-md-12">
@@ -66,21 +104,7 @@
         </div>
       </div>
     </div>
-    <!-- 公告 -->
-    <div class="py-2">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-12">
-            <vue-markdown :source="notice"></vue-markdown>
-            <!--            <p class="lead">-->
-            <!--              <span style="font-size: x-large;font-weight: bold; word-wrap:break-word" v-html="notice">-->
-            <!--              </span>-->
 
-            <!--            </p>-->
-          </div>
-        </div>
-      </div>
-    </div>
     <div class="py-3">
       <div class="container">
         <div class="row">
@@ -139,24 +163,6 @@
             aria-describedby="formMottoFeedback"></b-form-textarea>
           <b-form-invalid-feedback id="formMottoFeedback">格言长度不应该大于255。</b-form-invalid-feedback>
         </b-form-group>
-        <!--        <div class="form-group row"><label for="user_name" class="col-2 col-form-label">姓名</label>-->
-        <!--          <div class="col-10">-->
-        <!--            <input type="text" class="form-control" id="user_name" placeholder="请在这里输入您的姓名。" v-model="formUserName">-->
-        <!--          </div>-->
-        <!--        </div>-->
-        <!--        <div class="form-group row"><label for="account" class="col-2 col-form-label">账号</label>-->
-        <!--          <div class="col-10">-->
-        <!--            <input type="text" class="form-control" id="account" placeholder="请在这里输入您的杭电的账号名。" v-model="formAccount">-->
-        <!--          </div>-->
-        <!--          <div class="text-right col-12 inline form-text" style="margin:0;font-size:12px">-->
-        <!--            <small class="text-right text-danger"> 注意：这里填写的是您杭电的登录账号，不是用户名，请注意！</small>-->
-        <!--          </div>-->
-        <!--        </div>-->
-        <!--        <div class="form-group row"><label class="col-2 col-form-label">格言</label>-->
-        <!--          <div class="col-10">-->
-
-        <!--          </div>-->
-        <!--        </div>-->
       </b-form>
       <!--      <b-form-textarea v-model="formMotto" rows="3"></b-form-textarea>-->
     </b-modal>
@@ -212,7 +218,33 @@
       return {
         crawlStatus: '',
         isAdmin: false,
+        user_fields: [
+          {
+            key: 'index',
+            label: ' '
+          },
+          {
+            key: 'class_name',
+            label: '班级',
+            sortable: true
+          },
+          {
+            key: 'name',
+            label: '姓名',
+            sortable: true
+          },
+          {
+            key: 'motto',
+            label: '格言'
+          },
+          {
+            key: 'solved_num',
+            label: '题数'
+          }
+        ],
         users: [],
+        user: null,
+        admin: null,
         formUserName: '',
         formAccount: '',
         formAccountAvailable: false,
@@ -238,11 +270,10 @@
     methods: {
       getRank () {
         this.$ajax.get('/get_rank').then((resp) => {
-          console.log(resp)
-          if (resp['status']) {
-            this.users = resp['users']
-            this.newNotice = this.notice = resp['notice']
-          }
+          this.users = resp['users']
+          this.newNotice = this.notice = resp['notice']
+          this.user = resp['user']
+          this.admin = resp['admin']
         })
       },
       validateFormAccount () {
@@ -327,11 +358,11 @@
         })
       },
       getLoginInfo () {
-        this.$ajax.get('/get_login_info').then(resp => {
+        this.$ajax.get('/login').then(resp => {
           if (resp.status) {
             this.isAdmin = resp['is_admin']
           } else {
-            this.showMsgModal('错误', resp['msg'])
+            // this.showMsgModal('错误', resp['msg'])
           }
         })
       },
@@ -402,9 +433,24 @@
         return !(this.formUserNameState && this.formAccountState && this.formMottoState && this.formAccountAvailable)
       }
     },
+    created () {
+      let _this = this
+      // 添加响应拦截器
+      this.$ajax.interceptors.response.use(function (response) {
+        let data = response.data
+        if (data.status && data.status === false) {
+          _this.showMsgModal('错误', data.msg)
+          return Promise.reject(data.msg)
+        }
+        return data
+      }, error => {
+        console.error(error)
+        this.showMsgModal('服务器错误', error)
+        return Promise.reject(error)
+      })
+    },
     mounted () {
       this.getRank()
-      this.getLoginInfo()
       this.getCrawlStatus()
     },
     beforeDestroy () {

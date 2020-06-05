@@ -4,6 +4,7 @@ import hashlib
 from typing import Union, Optional
 
 from flask import Flask, jsonify, request, session
+from flask_cors import CORS
 from requests import HTTPError, TooManyRedirects, Timeout
 
 import hdu_crawl
@@ -17,7 +18,9 @@ import tempfile
 my_setting.read_admin_password()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'hui1abUIU,W<>Q{}@^T&^$T()(@$!!_H1FBV3VHG.xcdfghSX045D4FG5H51ug44848416'
+app.config['SECRET_KEY'] = 'hui1abUIU,W<>Q{}@^T&^$T()(@$!!_H1FBV3VHG.xcdfghSX045D4FG5H51ug44848416' + str(
+    os.urandom(64))
+CORS(app, supports_credentials=True)
 
 
 @app.route('/api/get_rank')
@@ -25,7 +28,8 @@ def get_rank():
     """
     获取排行榜
     """
-    return jsonify(status=True, users=user_dao.get_rank(), notice=server_info.get_notice())
+    return jsonify(status=True, users=user_dao.get_rank(), notice=server_info.get_notice(),
+                   user=session.get('user', None), admin=session.get('admin', None))
 
 
 @app.route('/api/login')
@@ -51,7 +55,7 @@ def login():
         if user:
             return jsonify(status=True, user=user)
         else:
-            return jsonify(status=False, mgs="请先登录！")
+            return jsonify(status=False, msg="请先登录！")
 
 
 def __validate_user(field: str, value):
@@ -63,36 +67,36 @@ def __validate_user(field: str, value):
     """
     if field == 'uid':
         if value is None or len(value) > 16:
-            return jsonify(status=False, mgs="账号名长度不正确！")
+            return jsonify(status=False, msg="账号名长度不正确！")
         if user_dao.exist_uid(value):
-            return jsonify(status=False, mgs="账号已被占用！")
+            return jsonify(status=False, msg="账号已被占用！")
     elif field == 'pwd':
         if value is None or len(value) > 128:
-            return jsonify(status=False, mgs="密码长度不正确！")
+            return jsonify(status=False, msg="密码长度不正确！")
     elif field == 'class_name':
         if len(value) > 24:
-            return jsonify(status=False, mgs="班级名长度不正确！")
+            return jsonify(status=False, msg="班级名长度不正确！")
     elif field == 'name':
         if value is None or len(value) > 16:
-            return jsonify(status=False, mgs="姓名长度不正确！")
+            return jsonify(status=False, msg="姓名长度不正确！")
     elif field == 'motto':
         if len(value) > 16:
-            return jsonify(status=False, mgs="姓名长度不正确！")
+            return jsonify(status=False, msg="姓名长度不正确！")
     elif field == 'account':
         if len(value) > 64:
-            return jsonify(status=False, mgs="杭电账号名过长！")
+            return jsonify(status=False, msg="杭电账号名过长！")
         if exist_account(value):
-            return jsonify(status=False, mgs="杭电账号已经被占用！")
+            return jsonify(status=False, msg="杭电账号已经被占用！")
         else:
             try:
                 if not hdu_crawl.exist_hdu_account(value):
-                    return jsonify(status=False, mgs="杭电账号不存在，请确认输入是否正确！")
+                    return jsonify(status=False, msg="杭电账号不存在，请确认输入是否正确！")
             except (ConnectionError, HTTPError, Timeout, TooManyRedirects):
-                return jsonify(status=False, mgs="连接HDU失败！")
+                return jsonify(status=False, msg="连接HDU失败！")
     elif field == 'status':
         if value:
             if value not in (User.UNCHECKED_STATUS, User.FETCHING_STATUS, User.ACTIVE_STATUS):
-                return jsonify(status=False, mgs="不正确的状态！")
+                return jsonify(status=False, msg="不正确的状态！")
     return None
 
 
