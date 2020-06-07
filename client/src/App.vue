@@ -25,28 +25,7 @@
           <vue-markdown :source="notice"></vue-markdown>
         </b-row>
       </b-container>
-      <!--      <div class="container">-->
-      <!--        <div class="row">-->
-      <!--          <div class="col-md-12">-->
-      <!--            <vue-markdown :source="notice"></vue-markdown>-->
-      <!--            &lt;!&ndash;            <p class="lead">&ndash;&gt;-->
-      <!--            &lt;!&ndash;              <span style="font-size: x-large;font-weight: bold; word-wrap:break-word" v-html="notice">&ndash;&gt;-->
-      <!--            &lt;!&ndash;              </span>&ndash;&gt;-->
-
-      <!--            &lt;!&ndash;            </p>&ndash;&gt;-->
-      <!--          </div>-->
-      <!--        </div>-->
-      <!--      </div>-->
     </div>
-    <!--    <div class="py-5">-->
-    <!--      <b-container>-->
-    <!--        <b-row>-->
-    <!--          <b-col>-->
-    <!--            <h1 class="text-center shadow-none"><b class="" style="    font-weight: bold;">HDU排行榜</b></h1>-->
-    <!--          </b-col>-->
-    <!--        </b-row>-->
-    <!--      </b-container>-->
-    <!--    </div>-->
     <!-- 排行榜 -->
     <div class="py-2">
       <b-container>
@@ -58,76 +37,20 @@
           </b-table>
         </b-row>
       </b-container>
-      <!--      <div class="container">-->
-      <!--        <div class="row">-->
-      <!--          <div class="col-md-12">-->
-      <!--            <div class="table-responsive">-->
-      <!--              <table class="table">-->
-      <!--                <caption>状态：<span id="status">{{crawlStatus}}-->
-      <!--                  <i :class="'fa d-inline fa-circle'+crawlStatusClass"></i>-->
-      <!--                  <template v-if="isAdmin">-->
-      <!--                      <b-button @click="beginCrawl" variant="link" v-if="crawlStatus==='stopped'">启动</b-button>-->
-      <!--                    <b-button @click="stopCrawl" variant="link" v-else>停止</b-button>-->
-      <!--                  </template>-->
-      <!--                </span></caption>-->
-      <!--                <thead>-->
-      <!--                <tr>-->
-      <!--                  <th>#</th>-->
-      <!--                  <th>姓名</th>-->
-      <!--                  <th>账号</th>-->
-      <!--                  <th>格言</th>-->
-      <!--                  <th>题数</th>-->
-      <!--                </tr>-->
-      <!--                </thead>-->
-      <!--                <tbody>-->
-      <!--                <tr v-for="(user,index) in users" v-bind:key="user['id']">-->
-      <!--                  <td>{{index+1}}-->
-      <!--                    <i class="fa d-inline fa-lg fa-times text-danger" v-if="isAdmin"-->
-      <!--                       @click="removeUser(user['id'])"></i>-->
-      <!--                  </td>-->
-      <!--                  <td class="table-text-wrap">{{user['name']}}</td>-->
-      <!--                  <td class="table-text-wrap">{{user['account']}}</td>-->
-      <!--                  <td class="table-text-wrap">{{user['motto']}}</td>-->
-      <!--                  <td>-->
-      <!--                    <template v-if="user['status']==='unchecked'">-->
-      <!--                      <span class="text-warning">待确认</span>-->
-      <!--                      <i class="fa d-inline fa-lg fa-check text-success" @click="confirmUser(user['id'])"-->
-      <!--                         v-if="isAdmin"></i>-->
-      <!--                    </template>-->
-      <!--                    <template v-else>{{user['solved_num']}}</template>-->
-      <!--                  </td>-->
-      <!--                </tr>-->
-      <!--                </tbody>-->
-      <!--              </table>-->
-      <!--              <div>-->
-      <!--                <b-button variant="link" @click="addUserModalShow = true">-->
-      <!--                  <i class="fa fa-plus fa-fw fa-lg py-1"></i>-->
-      <!--                  <span style="font-size:110%">添加账号</span></b-button>-->
-      <!--              </div>-->
-      <!--              <div v-if="isAdmin">-->
-      <!--                <b-button variant="link" @click="addNoticeModalShow = true">-->
-      <!--                  <i class="fa fa-plus fa-fw fa-lg py-1"></i>-->
-      <!--                  <span style="font-size:110%">添加公告</span></b-button>-->
-      <!--              </div>-->
-      <!--            </div>-->
-      <!--          </div>-->
-      <!--        </div>-->
-      <!--      </div>-->
     </div>
 
     <div class="py-3">
       <div class="container">
         <div class="row">
           <div class="col-md-12 text-center">
-            <p class="mb-0">Writed By 雪靡. All rights reserved |
-              <b-button variant="link" v-if="!isAdmin" @click="adminLoginModalShow = true">管理员登录</b-button>
-              <b-button variant="link" v-else @click="adminLogout">管理员退出</b-button>
-              | Open Source on <a href="https://github.com/736248591/hdu_rank" target="_blank">GitHub</a>
+            <p class="mb-0">Writed By 雪靡. All rights reserved | Open Source on <a
+              href="https://github.com/736248591/hdu_rank" target="_blank">GitHub</a>
             </p>
           </div>
         </div>
       </div>
     </div>
+    <b-modal v-model="loginModalShow" title="登录" ok-title="确认" cancel-title="取消" @ok
 
     <!-- 注册 -->
     <b-modal id="addUserModal" title="注册" ok-title="确认" cancel-title="取消" @ok="addUser"
@@ -137,20 +60,25 @@
           label="登录账号">
           <b-form-input
             :state="formUidState"
-            aria-describedby="formUidFeedback"
-            placeholder="请在这里输入您的登录账号名"
             required
             trim
             type="text"
             v-model="formUid">
           </b-form-input>
           <b-form-invalid-feedback id="formUidFeedback">
-            登录账号长度一个在3-16之间。
+            {{formUidServerFeedbackString}}
           </b-form-invalid-feedback>
         </b-form-group>
         <b-form-group
-        label="密码">
-
+          label="密码">
+          <b-form-input
+            :state="formPwdState"
+            aria-describedby="formPwdFeedback"
+            placeholder="请在这里输入密码！"
+            required
+            trim
+            type="password"
+            v-model="formPwd"></b-form-input>
         </b-form-group>
         <b-form-group
           label="姓名：">
@@ -296,6 +224,7 @@
         msgVisible: false,
         adminPwd: '',
         adminLoginModalShow: false,
+        loginModalShow: false,
         addUserModalShow: false,
         notice: '',
         newNotice: '',
@@ -311,32 +240,61 @@
           this.admin = resp['admin']
         })
       },
+      validateFormUid () {
+        this.formUidServerFeedbackString = '检测中……'
+        let params = {
+          field: 'uid',
+          value: this.formUid
+        }
+        this.$ajax.get('/validate_user', { params }).then(resp => {
+          this.formAccountAvailable = resp.status
+          if (!resp.status) {
+            this.formUidServerFeedbackString = resp.msg
+          }
+        })
+      },
       validateFormAccount () {
         this.formAccountServerFeedbackString = '检测中……'
         let params = {
           account: this.formAccount
         }
         this.$ajax.get('/validate_user', { params }).then(resp => {
+          this.formAccountAvailable = resp.status
           if (!resp.status) {
             this.formAccountServerFeedbackString = resp.msg
-            this.formAccountAvailable = false
-          } else {
-            this.formAccountAvailable = true
           }
         })
       },
+      formReset () {
+        this.formUid = ''
+        this.formUidAvailable = false
+        this.formUidServerFeedbackString = '当失去焦点时将验证账号'
+        this.formPwd = ''
+        this.formConfirmPwd = ''
+        this.formClassName = ''
+        this.formUserName = ''
+        this.formAccount = ''
+        this.formAccountAvailable = false
+        this.formAccountServerFeedbackString = '当失去焦点时将验证账号'
+        this.formMotto = ''
+      },
       addUser () {
+        let sha = new SHA('SHA3-512', 'TEXT', { encoding: 'UTF8', numRounds: 6 })
+        let pwd = this.formPwd
+        sha.update(this.formPwd)
+        pwd = sha.getHash('HEX')
         let params = {
+          uid: this.formUid,
+          pwd: pwd,
+          class_name: this.formClassName,
           name: this.formUserName,
           account: this.formAccount,
           motto: this.formMotto
         }
-        this.$ajax.get('/add', { params }).then(resp => {
+        this.$ajax.post('/put_user', { params }).then(resp => {
           if (resp.status) {
             this.showMsgModal('提示', '操作成功！', () => {
-              this.formUserName = ''
-              this.formAccount = ''
-              this.formMotto = ''
+              this.formReset()
               this.getRank()
             })
           } else {
@@ -344,9 +302,32 @@
           }
         })
       },
+      login () {
+        let sha = new SHA('SHA3-512', 'TEXT', { encoding: 'UTF8', numRounds: 6 })
+        let pwd = this.formPwd
+        sha.update(this.formPwd)
+        pwd = sha.getHash('HEX')
+        let params = {
+          uid: this.formUid,
+          pwd: pwd
+        }
+        this.$ajax.post('/login', { params }).then(resp => {
+          if (resp.status) {
+            this.formReset()
+            this.getRank()
+          } else {
+            this.showMsgModal('错误', resp.msg)
+          }
+        })
+      },
+      logout () {
+        this.$ajax.get('/logout').then(resp => {
+          this.getRank()
+        })
+      },
       removeUser (id) {
         this.showMsgModal('提示', '是否确认删除？', () => {
-          this.$ajax.get('/remove', { params: { id } }).then(resp => {
+          this.$ajax.get('/remove_user', { params: { id } }).then(resp => {
             if (resp.status) {
               this.getRank()
             } else {
@@ -477,16 +458,8 @@
       }
     },
     created () {
-      let _this = this
       // 添加响应拦截器
-      this.$ajax.interceptors.response.use(function (response) {
-        let data = response.data
-        if (data.status && data.status === false) {
-          _this.showMsgModal('错误', data.msg)
-          return Promise.reject(data.msg)
-        }
-        return data
-      }, error => {
+      this.$ajax.interceptors.response.use(resp => resp.data, error => {
         console.error(error)
         this.showMsgModal('服务器错误', error)
         return Promise.reject(error)

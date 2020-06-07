@@ -80,7 +80,6 @@ uwsgi --ini uwsgi.ini
 ```
   {
       status: 操作状态 Boolean,
-      msg: 错误原因 （当状态为false时，拥有这个字段）string,
       notice: 公告 string,
       users: 用户列表（当状态为True时，拥有这个字段）
       [
@@ -115,7 +114,7 @@ uwsgi --ini uwsgi.ini
 | 字段名 | 数据类型 | 默认值 |  描   述   |
 | :----: | :------: | :----: | :--------: |
 | uid	 | string(16) |        | 账号  |
-| pwd	 | string(16) |    ""  | 密码，sha3-512(md5(原始密码)) |
+| pwd	 | string(16) |    ""  | 密码，sha3-512(原始密码)，重复加密6次 |
 **响应数据：**
 ```
   {
@@ -148,7 +147,7 @@ uwsgi --ini uwsgi.ini
 | :----: | :------: | :----: | :--------: |
 | id	 | int |        | 用户唯一标识  |
 | uid	 | string(16) |        | 登录账号  |
-| pwd	 | string(16) |    ""  | 密码，sha3-512(md5(原始密码)) |
+| pwd	 | string(16) |    ""  | 密码，sha3-512(原始密码)，重复加密6次 |
 | class_name	 | string(24) |    ""    | 班级 |
 | name	 | string(16) |        | 姓名  |
 | account |  string(64)  |        |  杭电账号  |
@@ -183,8 +182,7 @@ uwsgi --ini uwsgi.ini
 **响应数据：**
 ```
   {
-      status: 操作状态 Boolean,
-      mgs: 错误原因 (当状态为false时，拥有这个字段）string
+      status: 操作状态 Boolean
   }
 ```
 
