@@ -16,8 +16,8 @@
         <b-nav-item-dropdown v-else-if="user" :text="`欢迎，${user.uid}`" right>
           <b-dropdown-item @click="changePwdModalShow=true">修改密码</b-dropdown-item>
           <b-dropdown-item @click="changeMottoModalShow=true">修改格言</b-dropdown-item>
-          <b-dropdown-item>自定义页面</b-dropdown-item>
-          <b-dropdown-item>永久删除账号</b-dropdown-item>
+          <b-dropdown-item @click="changeUserHtmlModalShow=true">自定义页面</b-dropdown-item>
+          <b-dropdown-item @click="removeUser()">永久删除账号</b-dropdown-item>
           <b-dropdown-item @click="logout">登出</b-dropdown-item>
         </b-nav-item-dropdown>
       </b-navbar-nav>
@@ -31,13 +31,26 @@
         </b-row>
       </b-container>
     </div>
+
     <!-- 排行榜 -->
     <div class="py-2">
       <b-container>
         <b-row>
-          <b-table :items="users" :fields="user_fields">
+          <b-table :items="users" :fields="user_fields" :responsive="true">
             <template v-slot:cell(index)="data">
               {{data.index +1 }}
+            </template>
+
+            <template v-slot:cell(solved_num)="data">
+              <template v-if="data.value">
+                {{data.value}}
+              </template>
+              <span class="text-warning" v-else-if="data.item.status==='unchecked'">
+                未确认
+              </span>
+              <span class="text-warning" v-else>
+                爬取中
+              </span>
             </template>
           </b-table>
         </b-row>
@@ -83,6 +96,11 @@
           <b-form-invalid-feedback :state="loginServerFeedbackState">
             {{loginServerFeedbackString}}
           </b-form-invalid-feedback>
+        </b-form-group>
+        <b-form-group>
+          <b-form-checkbox v-model="isAdminLoginMode" switch>
+            管理员登录模式
+          </b-form-checkbox>
         </b-form-group>
       </b-form>
     </b-modal>
@@ -243,7 +261,7 @@
 
     <!-- 修改格言 -->
     <b-modal title="修改密码" ok-title="确认" cancel-title="取消" @ok="changeMotto" v-model="changeMottoModalShow"
-             :ok-disabled="changeMottoModalOkDisabled" @show="formReset">
+             :ok-disabled="changeMottoModalOkDisabled" @show="formAccount=user.account">
       <b-form>
         <b-form-group
           label="格言：">
@@ -260,6 +278,11 @@
     </b-modal>
 
     <!-- 修改用户自定义页面代码 -->
+    <b-modal size="xl" title="自定义页面代码" ok-title="确认" cancel-title="取消" @ok="changeUserHtml"
+             v-model="changeUserHtmlModalShow" @show="userHtml=user.html">
+      <prism-editor v-model="userHtml" language="html" :lineNumbers="true"></prism-editor>
+
+    </b-modal>
 
     <!-- 管理员登录弹窗 -->
     <b-modal id="adminLoginModal" title="管理员登录" ok-title="确认" cancel-title="取消" @ok="adminLogin"
@@ -275,13 +298,6 @@
 
           </b-form-input>
         </b-form-group>
-        <!--        <div class="form-group"><label for="admin_password">密码</label>-->
-        <!--          <input id="admin_password"-->
-        <!--                 type="password"-->
-        <!--                 class="form-control"-->
-        <!--                 placeholder="请在这里输入管理员密码。"-->
-        <!--                 v-model="adminPwd">-->
-        <!--        </div>-->
       </b-form>
     </b-modal>
     <!-- 消息弹窗 -->
@@ -303,13 +319,17 @@
 
 <script>
   import VueMarkdown from 'vue-markdown'
+  import $ from 'jquery'
+  // import 'prismjs/components/prism-http.min'
 
-  var zxcvbn = require('zxcvbn')
+  let zxcvbn = require('zxcvbn')
 
   let SHA = require('jssha')
 
   export default {
-    components: { VueMarkdown },
+    components: {
+      VueMarkdown
+    },
     name: 'app',
     data () {
       return {
@@ -323,20 +343,28 @@
           {
             key: 'class_name',
             label: '班级',
-            sortable: true
+            sortable: true,
+            thClass: 'rank-td',
+            tdClass: 'rank-td'
           },
           {
             key: 'name',
             label: '姓名',
-            sortable: true
+            sortable: true,
+            thClass: 'rank-td',
+            tdClass: 'rank-td'
           },
           {
             key: 'motto',
-            label: '格言'
+            label: '格言',
+            tdClass: 'table-text-wrap',
+            thClass: 'rank-td'
           },
           {
             key: 'solved_num',
-            label: '题数'
+            label: '题数',
+            thClass: 'rank-td',
+            tdClass: 'rank-td'
           }
         ],
         users: [],
@@ -376,7 +404,9 @@
         //
         changePwdModalShow: false,
         changeMottoModalShow: false,
-        editHtml: ''
+        changeUserHtmlModalShow: false,
+        userHtml: '',
+        isAdminLoginMode: false
       }
     },
     methods: {
@@ -387,9 +417,11 @@
           this.user = resp['user']
           this.admin = resp['admin']
           if (this.user && this.user.html) {
-            let div = document.createElement('div')
-            div.innerHTML = this.user.html
-            document.body.appendChild(div)
+            console.log(this.user.html)
+            $('body').append(this.user.html)
+            // let div = document.createElement('div')
+            // div.innerHTML = this.user.html
+            // document.body.appendChild(div)
           }
         })
       },
@@ -472,16 +504,20 @@
           uid: this.loginUid,
           pwd: pwd
         }
-        this.$ajax.get('/login', { params }).then(resp => {
-          if (resp.status) {
-            this.loginUid = this.loginPwd = ''
-            this.getRank()
-            this.loginModalShow = false
-          } else {
-            this.loginServerFeedbackState = false
-            this.loginServerFeedbackString = resp.msg
-          }
-        })
+        if (this.isAdminLoginMode) {
+
+        } else {
+          this.$ajax.get('/login', { params }).then(resp => {
+            if (resp.status) {
+              this.loginUid = this.loginPwd = ''
+              this.getRank()
+              this.loginModalShow = false
+            } else {
+              this.loginServerFeedbackState = false
+              this.loginServerFeedbackString = resp.msg
+            }
+          })
+        }
       },
       changePwd (event) {
         event.preventDefault()
@@ -525,8 +561,28 @@
           this.getRank()
         })
       },
+      changeUserHtml (event) {
+        event.preventDefault()
+        let params = {
+          id: this.user.id,
+          html: this.userHtml
+        }
+        this.$ajax.get('/put_user', { params }).then(resp => {
+          if (resp.status) {
+            this.showMsgModal('提示', '修改成功！', () => {
+              this.getRank()
+              location.reload()
+            })
+          } else {
+            this.showMsgModal('错误', resp.msg)
+          }
+        })
+      },
       removeUser (id) {
-        this.showMsgModal('提示', '是否确认删除？', () => {
+        if (!id) {
+          id = this.user.id
+        }
+        this.showMsgModal('提示', '是否确认删除？<br/>注意：此操作不可逆！', () => {
           this.$ajax.get('/remove_user', { params: { id } }).then(resp => {
             if (resp.status) {
               this.getRank()
@@ -630,6 +686,15 @@
             this.showMsgModal('错误', resp['msg'])
           }
         })
+      },
+      userScoreString (user) {
+        if (user.solved_num) {
+          return user.solved_num
+        } else if (user.status === 'unchecked') {
+          return '未确认'
+        } else if (user.status === 'fetching') {
+          return '爬取中'
+        }
       }
     },
     computed: {
@@ -727,5 +792,10 @@
   .table-text-wrap {
     word-wrap: break-word;
     word-break: break-all;
+  }
+
+  .rank-td {
+    min-width: fit-content;
+    word-break: keep-all;
   }
 </style>

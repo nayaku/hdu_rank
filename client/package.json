@@ -14,9 +14,12 @@
     "bootstrap": "^4.5.0",
     "bootstrap-vue": "^2.0.0-rc.20",
     "core-js": "^2.6.0",
+    "jquery": "^3.5.1",
     "jssha": "^2.3.0",
+    "prismjs": "^1.20.0",
     "vue": "^2.6.10",
     "vue-markdown": "^2.2.4",
+    "vue-prism-editor": "^0.6.1",
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {

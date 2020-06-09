@@ -133,7 +133,10 @@ def put_user():
             if user.pwd:
                 session.clear()
             else:
-                session['user'] = user.__dict__
+                for key in current_user.keys():
+                    if user.__dict__[key]:
+                        current_user[key] = user.__dict__[key]
+                session['user'] = current_user
     else:
         for item in user.__dict__.items():
             res = __validate_user(item[0], item[1])
@@ -275,6 +278,8 @@ def put_admin():
                 if res:
                     return res
                 admin.update()
+                if admin.id == current_admin['id']:
+                    session.clear()
             else:
                 return jsonify(status=False, msg="没有权限！")
         else:
