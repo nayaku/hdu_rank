@@ -14,7 +14,7 @@ Vue.use(IconsPlugin)
 let ajax = axios.create({
   baseURL: (process && process.env.NODE_ENV === 'development') ? 'http://localhost:5000/api' : '/api/'
 })
-
+ajax.defaults.withCredentials = true
 Vue.prototype.$ajax = ajax
 
 new Vue({

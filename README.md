@@ -81,6 +81,7 @@ uwsgi --ini uwsgi.ini
   {
       status: 操作状态 Boolean,
       notice: 公告 string,
+      crawl_status: 爬虫状态 union("runable","running","sleeping","stopped")
       users: 用户列表（当状态为True时，拥有这个字段）
       [
           {
@@ -163,7 +164,7 @@ uwsgi --ini uwsgi.ini
 ```
 
 - ### /api/validate_user 验证字段
-- **说明：**  注册的时候用来验证字段。
+**说明：**  注册的时候用来验证字段。
 **参数：**
 | 字段名 | 数据类型 | 默认值 |  描   述   |
 | :----: | :------: | :----: | :--------: |
@@ -239,7 +240,7 @@ uwsgi --ini uwsgi.ini
 ```
 
 - ### /api/validate_admin 验证管理员字段
-- **说明：**  添加管理员的时候用来验证字段。
+**说明：**  添加管理员的时候用来验证字段。
 **参数：**
 | 字段名 | 数据类型 | 默认值 |  描   述   |
 | :----: | :------: | :----: | :--------: |
@@ -285,7 +286,7 @@ uwsgi --ini uwsgi.ini
 ```
 
 - ### /api/crawl_start 开始滚版
-**说明：** 必须先登录才能使用该接口。
+**说明：** 只有管理员才能使用该接口。
 **参数：**（无）
 **响应数据：**
 ```
@@ -296,7 +297,7 @@ uwsgi --ini uwsgi.ini
 ```
 
 - ### /api/crawl_stop 停止滚榜
-**说明：** 必须先登录才能使用该接口。
+**说明：** 只有管理员才能使用该接口。
 **参数：**（无）
 **响应数据：**
 ```
@@ -306,19 +307,9 @@ uwsgi --ini uwsgi.ini
   }
 ```
 
-- ### /api/crawl_status 爬虫状态
-**参数：**（无）
-**响应数据：**
-```
-  {
-      status: 操作状态 Boolean,
-      mgs: 错误原因 (当状态为false时，拥有这个字段）string
-      crawl_status: 爬虫状态 union("runable","running","sleeping","stopped")
-  }
-  
-```
 
 - ### /api/add_notice 添加通知
+**说明：** 只有管理员才能使用该接口。
 **参数：**
 | 字段名 | 数据类型 | 默认值 |  描   述   |
 | :----: | :------: | :----: | :--------: |

@@ -1,25 +1,25 @@
 import os
-import time
-import hashlib
-from typing import Union, Optional
+from typing import Optional
 
 from flask import Flask, jsonify, request, session
 from flask_cors import CORS
 from requests import HTTPError, TooManyRedirects, Timeout
 
 import hdu_crawl
+import my_setting
 from dao import user_dao, admin_dao, server_info
 from dao.admin_dao import Admin
-from dao.user_config import UserConfig, save_user_config
-from dao.user_dao import User, exist_account, login, exist_uid
-import my_setting
-import tempfile
+from dao.user_dao import User, exist_account, exist_uid
 
 my_setting.read_admin_password()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'hui1abUIU,W<>Q{}@^T&^$T()(@$!!_H1FBV3VHG.xcdfghSX045D4FG5H51ug44848416' + str(
-    os.urandom(64))
+env_dist = os.environ
+if 'FLASK_ENV' in env_dist and env_dist['FLASK_ENV'] == 'development':
+    app.config['SECRET_KEY'] = 'hui1abUIU,W<>Q{}@^T&^$T()(@$!!_H1FBV3VHG.xcdfghSX045D4FG5H51ug44848416'
+else:
+    app.config['SECRET_KEY'] = 'hui1abUIU,W<>Q{}@^T&^$T()(@$!!_H1FBV3VHG.xcdfghSX045D4FG5H51ug44848416' + str(
+        os.urandom(64))
 CORS(app, supports_credentials=True)
 
 
@@ -29,7 +29,8 @@ def get_rank():
     获取排行榜
     """
     return jsonify(status=True, users=user_dao.get_rank(), notice=server_info.get_notice(),
-                   user=session.get('user', None), admin=session.get('admin', None))
+                   user=session.get('user', None), admin=session.get('admin', None),
+                   crawl_status=hdu_crawl.crawl_status())
 
 
 @app.route('/api/login')
@@ -80,8 +81,8 @@ def __validate_user(field: str, value):
         if value is None or len(value) > 16:
             return jsonify(status=False, msg="姓名长度不正确！")
     elif field == 'motto':
-        if len(value) > 16:
-            return jsonify(status=False, msg="姓名长度不正确！")
+        if len(value) > 255:
+            return jsonify(status=False, msg="格言长度不正确！")
     elif field == 'account':
         if len(value) > 64:
             return jsonify(status=False, msg="杭电账号名过长！")
@@ -121,13 +122,18 @@ def put_user():
                     return res
         admin = session.get('admin', None)
         current_user = session.get('user', None)
+        if not (admin or current_user):
+            return jsonify(status=False, msg="请先登录！")
         if not admin and current_user['id'] != user.id:
             return jsonify(status=False, msg="没有权限！")
         if user.status and not admin:
             return jsonify(status=False, msg="没有权限！")
         user.update()
-        if current_user and current_user['id'] == user.id:
-            session['user'] = user.__dict__
+        if current_user:
+            if user.pwd:
+                session.clear()
+            else:
+                session['user'] = user.__dict__
     else:
         for item in user.__dict__.items():
             res = __validate_user(item[0], item[1])

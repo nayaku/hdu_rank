@@ -8748,3 +8748,8 @@ yorkie@^2.0.0:
     is-ci "^1.0.10"
     normalize-path "^1.0.0"
     strip-indent "^2.0.0"
+
+zxcvbn@^4.4.2:
+  version "4.4.2"
+  resolved "https://registry.npm.taobao.org/zxcvbn/download/zxcvbn-4.4.2.tgz#28ec17cf09743edcab056ddd8b1b06262cc73c30"
+  integrity sha1-KOwXzwl0PtyrBW3dixsGJizHPDA=

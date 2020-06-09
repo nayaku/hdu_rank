@@ -4,16 +4,21 @@
     <b-navbar toggleable="lg" type="dark" variant="primary">
       <b-navbar-brand>HDU排行榜</b-navbar-brand>
       <b-navbar-brand>
-        <small>
+        <span style="font-size: x-small">
           <a href="https://github.com/736248591/hdu_rank" style="color: rgba(255,255,255,0.4)">GitHub地址</a>
-        </small>
+        </span>
       </b-navbar-brand>
       <b-navbar-nav class="ml-auto">
-        <b-nav-item-dropdown text="用户" right>
-          <template v-if="!user&&!admin">
-            <b-dropdown-item>登录</b-dropdown-item>
-            <b-dropdown-item>注册</b-dropdown-item>
-          </template>
+        <b-nav-item-dropdown v-if="!user&&!admin" text="用户" right>
+          <b-dropdown-item @click="loginModalShow=true">登录</b-dropdown-item>
+          <b-dropdown-item @click="registerUserModalShow=true">注册</b-dropdown-item>
+        </b-nav-item-dropdown>
+        <b-nav-item-dropdown v-else-if="user" :text="`欢迎，${user.uid}`" right>
+          <b-dropdown-item @click="changePwdModalShow=true">修改密码</b-dropdown-item>
+          <b-dropdown-item @click="changeMottoModalShow=true">修改格言</b-dropdown-item>
+          <b-dropdown-item>自定义页面</b-dropdown-item>
+          <b-dropdown-item>永久删除账号</b-dropdown-item>
+          <b-dropdown-item @click="logout">登出</b-dropdown-item>
         </b-nav-item-dropdown>
       </b-navbar-nav>
     </b-navbar>
@@ -50,65 +55,120 @@
         </div>
       </div>
     </div>
-    <b-modal v-model="loginModalShow" title="登录" ok-title="确认" cancel-title="取消" @ok
+
+    <!-- 登录 -->
+    <b-modal v-model="loginModalShow" title="登录" ok-title="确认" cancel-title="取消" @ok="login"
+             :ok-disabled="loginModalOkDisabled">
+      <b-form @submit="login">
+        <b-form-group label="登录账号：">
+          <b-form-input
+            :state="loginServerFeedbackState"
+            required
+            trim
+            type="text"
+            v-model="loginUid"
+            @input="loginServerFeedbackState=null"></b-form-input>
+        </b-form-group>
+        <b-form-group
+          label="密码：">
+          <b-form-input
+            :state="loginServerFeedbackState"
+            required
+            trim
+            type="password"
+            v-model="loginPwd"
+            @input="loginServerFeedbackState=null"></b-form-input>
+        </b-form-group>
+        <b-form-group>
+          <b-form-invalid-feedback :state="loginServerFeedbackState">
+            {{loginServerFeedbackString}}
+          </b-form-invalid-feedback>
+        </b-form-group>
+      </b-form>
+    </b-modal>
 
     <!-- 注册 -->
-    <b-modal id="addUserModal" title="注册" ok-title="确认" cancel-title="取消" @ok="addUser"
-             :ok-disabled="addUserModalOkDisabled" v-model="addUserModalShow">
-      <b-form @submit="addUser">
+    <b-modal title="注册" hide-footer v-model="registerUserModalShow" @show="formReset">
+      <b-form @submit="registerUser">
         <b-form-group
-          label="登录账号">
+          label="登录账号：">
           <b-form-input
             :state="formUidState"
             required
             trim
             type="text"
-            v-model="formUid">
+            v-model="formUid"
+            @blur="validateFormUid">
           </b-form-input>
-          <b-form-invalid-feedback id="formUidFeedback">
+          <b-form-invalid-feedback :state="formUidState">
             {{formUidServerFeedbackString}}
           </b-form-invalid-feedback>
         </b-form-group>
         <b-form-group
-          label="密码">
+          label="密码：">
           <b-form-input
             :state="formPwdState"
-            aria-describedby="formPwdFeedback"
-            placeholder="请在这里输入密码！"
             required
             trim
             type="password"
             v-model="formPwd"></b-form-input>
         </b-form-group>
+        <b-form-invalid-feedback :state="formPwdState">
+          {{formPwdFeedbackString}}
+        </b-form-invalid-feedback>
+        <b-progress
+          v-show="formPwd"
+          :value="formPwdStrengthScore"
+          max="5"
+          animated
+          :variant="formPwdProgressVariant"></b-progress>
+        <b-form-group
+          label="确认密码">
+          <b-form-input
+            :state="formConfirmPwdState"
+            required
+            trim
+            type="password"
+            v-model="formConfirmPwd">
+          </b-form-input>
+          <b-form-invalid-feedback :state="formConfirmPwdState">
+            两次输入的密码不一致！
+          </b-form-invalid-feedback>
+        </b-form-group>
+        <b-form-group
+          label="班级名：">
+          <b-form-input
+            :state="formClassNameState"
+            trim
+            type="text"
+            v-model="formClassName"></b-form-input>
+          <b-form-invalid-feedback :state="formClassNameState">
+            班级名应该小于等于24。
+          </b-form-invalid-feedback>
+        </b-form-group>
         <b-form-group
           label="姓名：">
           <b-form-input
             :state="formUserNameState"
-            aria-describedby="formUserNameFeedback"
-            placeholder="请在这里输入您的姓名。"
             required
             trim
             type="text"
             v-model="formUserName">
           </b-form-input>
-          <b-form-invalid-feedback id="formUserNameFeedback">
+          <b-form-invalid-feedback>
             姓名长度应该在2-16之间。
           </b-form-invalid-feedback>
         </b-form-group>
         <b-form-group
-          label="账号：">
+          label="杭电账号：">
           <b-form-input
-            :state="formAccountState && formAccountAvailable"
-            placeholder="请在这里输入您的杭电的账号名。"
+            :state="formAccountState"
             v-model="formAccount"
             required
             trim
             @blur="validateFormAccount"></b-form-input>
         </b-form-group>
         <b-form-invalid-feedback :state="formAccountState">
-          账号长度应该在1-64之间。
-        </b-form-invalid-feedback>
-        <b-form-invalid-feedback :state="formAccountAvailable">
           {{formAccountServerFeedbackString}}
         </b-form-invalid-feedback>
         <b-form-group
@@ -117,12 +177,90 @@
             :state="formMottoState"
             v-model="formMotto"
             rows="3"
-            aria-describedby="formMottoFeedback"></b-form-textarea>
-          <b-form-invalid-feedback id="formMottoFeedback">格言长度不应该大于255。</b-form-invalid-feedback>
+          ></b-form-textarea>
+          <b-form-invalid-feedback :state="formMottoState">
+            格言长度不应该大于255。
+          </b-form-invalid-feedback>
         </b-form-group>
       </b-form>
-      <!--      <b-form-textarea v-model="formMotto" rows="3"></b-form-textarea>-->
+      <hr/>
+      <b-container>
+        <b-row align-h="end">
+          <b-button
+            variant="info"
+            @click="formReset">重置
+          </b-button>&nbsp;&nbsp;
+          <b-button
+            variant="secondary"
+            @click="registerUserModalShow=false">取消
+          </b-button>&nbsp;&nbsp;
+          <b-button
+            variant="primary"
+            @click="registerUser"
+            :disabled="addUserModalOkDisabled">确认
+          </b-button>&nbsp;&nbsp;
+        </b-row>
+      </b-container>
     </b-modal>
+
+    <!-- 修改密码 -->
+    <b-modal title="修改密码" ok-title="确认" cancel-title="取消" @ok="changePwd" v-model="changePwdModalShow"
+             :ok-disabled="changePwdModalOkDisabled" @show="formReset">
+      <b-form>
+        <b-form-group
+          label="密码：">
+          <b-form-input
+            :state="formPwdState"
+            required
+            trim
+            type="password"
+            v-model="formPwd"></b-form-input>
+        </b-form-group>
+        <b-form-invalid-feedback :state="formPwdState">
+          {{formPwdFeedbackString}}
+        </b-form-invalid-feedback>
+        <b-progress
+          v-show="formPwd"
+          :value="formPwdStrengthScore"
+          max="5"
+          animated
+          :variant="formPwdProgressVariant"></b-progress>
+        <b-form-group
+          label="确认密码">
+          <b-form-input
+            :state="formConfirmPwdState"
+            required
+            trim
+            type="password"
+            v-model="formConfirmPwd">
+          </b-form-input>
+          <b-form-invalid-feedback :state="formConfirmPwdState">
+            两次输入的密码不一致！
+          </b-form-invalid-feedback>
+        </b-form-group>
+      </b-form>
+    </b-modal>
+
+    <!-- 修改格言 -->
+    <b-modal title="修改密码" ok-title="确认" cancel-title="取消" @ok="changeMotto" v-model="changeMottoModalShow"
+             :ok-disabled="changeMottoModalOkDisabled" @show="formReset">
+      <b-form>
+        <b-form-group
+          label="格言：">
+          <b-form-textarea
+            :state="formMottoState"
+            v-model="formMotto"
+            rows="3"
+          ></b-form-textarea>
+          <b-form-invalid-feedback :state="formMottoState">
+            格言长度不应该大于255。
+          </b-form-invalid-feedback>
+        </b-form-group>
+      </b-form>
+    </b-modal>
+
+    <!-- 修改用户自定义页面代码 -->
+
     <!-- 管理员登录弹窗 -->
     <b-modal id="adminLoginModal" title="管理员登录" ok-title="确认" cancel-title="取消" @ok="adminLogin"
              v-model="adminLoginModalShow">
@@ -166,6 +304,8 @@
 <script>
   import VueMarkdown from 'vue-markdown'
 
+  var zxcvbn = require('zxcvbn')
+
   let SHA = require('jssha')
 
   export default {
@@ -203,16 +343,20 @@
         user: null,
         admin: null,
         formUid: '',
-        formUidAvailable: false,
-        formUidServerFeedbackString: '当失去焦点时将验证账号',
+        formUidFeedbackState: null,
+        formUidServerFeedbackString: '',
         formPwd: '',
         formConfirmPwd: '',
         formClassName: '',
         formUserName: '',
         formAccount: '',
-        formAccountAvailable: false,
-        formAccountServerFeedbackString: '当失去焦点时将验证账号',
+        formAccountFeedbackState: null,
+        formAccountServerFeedbackString: '',
         formMotto: '',
+        loginUid: '',
+        loginPwd: '',
+        loginServerFeedbackState: null,
+        loginServerFeedbackString: '',
         msg: '',
         msgClass: '',
         msgTitle: '',
@@ -225,10 +369,14 @@
         adminPwd: '',
         adminLoginModalShow: false,
         loginModalShow: false,
-        addUserModalShow: false,
+        registerUserModalShow: false,
         notice: '',
         newNotice: '',
-        addNoticeModalShow: false
+        addNoticeModalShow: false,
+        //
+        changePwdModalShow: false,
+        changeMottoModalShow: false,
+        editHtml: ''
       }
     },
     methods: {
@@ -238,51 +386,63 @@
           this.newNotice = this.notice = resp['notice']
           this.user = resp['user']
           this.admin = resp['admin']
+          if (this.user && this.user.html) {
+            let div = document.createElement('div')
+            div.innerHTML = this.user.html
+            document.body.appendChild(div)
+          }
         })
       },
       validateFormUid () {
-        this.formUidServerFeedbackString = '检测中……'
-        let params = {
-          field: 'uid',
-          value: this.formUid
-        }
-        this.$ajax.get('/validate_user', { params }).then(resp => {
-          this.formAccountAvailable = resp.status
-          if (!resp.status) {
-            this.formUidServerFeedbackString = resp.msg
+        if (this.formUid) {
+          this.formUidFeedbackState = false
+          this.formUidServerFeedbackString = '检测中……'
+          let params = {
+            field: 'uid',
+            value: this.formUid
           }
-        })
+          this.$ajax.get('/validate_user', { params }).then(resp => {
+            this.formUidFeedbackState = resp.status
+            if (!resp.status) {
+              this.formUidServerFeedbackString = resp.msg
+            }
+          })
+        }
       },
       validateFormAccount () {
-        this.formAccountServerFeedbackString = '检测中……'
-        let params = {
-          account: this.formAccount
-        }
-        this.$ajax.get('/validate_user', { params }).then(resp => {
-          this.formAccountAvailable = resp.status
-          if (!resp.status) {
-            this.formAccountServerFeedbackString = resp.msg
+        if (this.formAccount) {
+          this.formAccountFeedbackState = false
+          this.formAccountServerFeedbackString = '检测中……'
+          let params = {
+            field: 'account',
+            value: this.formAccount
           }
-        })
+          this.$ajax.get('/validate_user', { params }).then(resp => {
+            console.log(resp)
+            this.formAccountFeedbackState = resp.status
+            if (!resp.status) {
+              this.formAccountServerFeedbackString = resp.msg
+            }
+          })
+        }
       },
       formReset () {
         this.formUid = ''
-        this.formUidAvailable = false
-        this.formUidServerFeedbackString = '当失去焦点时将验证账号'
+        this.formUidFeedbackState = null
+        this.formUidServerFeedbackString = ''
         this.formPwd = ''
         this.formConfirmPwd = ''
         this.formClassName = ''
         this.formUserName = ''
         this.formAccount = ''
-        this.formAccountAvailable = false
-        this.formAccountServerFeedbackString = '当失去焦点时将验证账号'
+        this.formAccountFeedbackState = null
+        this.formAccountServerFeedbackString = ''
         this.formMotto = ''
       },
-      addUser () {
+      registerUser () {
         let sha = new SHA('SHA3-512', 'TEXT', { encoding: 'UTF8', numRounds: 6 })
-        let pwd = this.formPwd
         sha.update(this.formPwd)
-        pwd = sha.getHash('HEX')
+        let pwd = sha.getHash('HEX')
         let params = {
           uid: this.formUid,
           pwd: pwd,
@@ -291,30 +451,70 @@
           account: this.formAccount,
           motto: this.formMotto
         }
-        this.$ajax.post('/put_user', { params }).then(resp => {
+        this.$ajax.get('/put_user', { params }).then(resp => {
           if (resp.status) {
-            this.showMsgModal('提示', '操作成功！', () => {
+            this.showMsgModal('提示', '注册成功！请返回登录。', () => {
               this.formReset()
               this.getRank()
+              this.registerUserModalShow = false
             })
           } else {
             this.showMsgModal('错误', resp.msg)
           }
         })
       },
-      login () {
+      login (event) {
+        event.preventDefault()
         let sha = new SHA('SHA3-512', 'TEXT', { encoding: 'UTF8', numRounds: 6 })
-        let pwd = this.formPwd
-        sha.update(this.formPwd)
-        pwd = sha.getHash('HEX')
+        sha.update(this.loginPwd)
+        let pwd = sha.getHash('HEX')
         let params = {
-          uid: this.formUid,
+          uid: this.loginUid,
           pwd: pwd
         }
-        this.$ajax.post('/login', { params }).then(resp => {
+        this.$ajax.get('/login', { params }).then(resp => {
           if (resp.status) {
-            this.formReset()
+            this.loginUid = this.loginPwd = ''
             this.getRank()
+            this.loginModalShow = false
+          } else {
+            this.loginServerFeedbackState = false
+            this.loginServerFeedbackString = resp.msg
+          }
+        })
+      },
+      changePwd (event) {
+        event.preventDefault()
+        let sha = new SHA('SHA3-512', 'TEXT', { encoding: 'UTF8', numRounds: 6 })
+        sha.update(this.formPwd)
+        let pwd = sha.getHash('HEX')
+        let params = {
+          id: this.user.id,
+          pwd: pwd
+        }
+        this.$ajax.get('/put_user', { params }).then(resp => {
+          if (resp.status) {
+            this.showMsgModal('提示', '修改成功！请返回登录。', () => {
+              this.getRank()
+              this.changePwdModalShow = false
+            })
+          } else {
+            this.showMsgModal('错误', resp.msg)
+          }
+        })
+      },
+      changeMotto (event) {
+        event.preventDefault()
+        let params = {
+          id: this.user.id,
+          motto: this.formMotto
+        }
+        this.$ajax.get('/put_user', { params }).then(resp => {
+          if (resp.status) {
+            this.showMsgModal('提示', '修改成功！', () => {
+              this.getRank()
+              this.changeMottoModalShow = false
+            })
           } else {
             this.showMsgModal('错误', resp.msg)
           }
@@ -437,35 +637,80 @@
         return this.crawlStatus === 'stopped' ? 'text-primary' : 'text-danger'
       },
       formUidState () {
-        return this.formUid.length > 1 && this.formUid.length <= 16
+        return this.formUid ? this.formUid.length > 1 && this.formUid.length <= 16 && this.formUidFeedbackState !== false : null
       },
       formPwdState () {
         let regNumber = /\d+/
         let regAlpha = /[a-zA-Z]+/
-        return this.formPwd.length > 3 && regNumber.test(this.formPwd) && regAlpha.test(this.formPwd)
+        return this.formPwd ? this.formPwd.length > 8 && regNumber.test(this.formPwd) && regAlpha.test(this.formPwd) : null
+      },
+      formPwdFeedbackString () {
+        if (this.formPwd.length < 8) {
+          return '长度不得小于8'
+        }
+        let regNumber = /\d+/
+        if (!regNumber.test(this.formPwd)) {
+          return '必须包含数字'
+        }
+        let regAlpha = /[a-zA-Z]+/
+        if (!regAlpha.test(this.formPwd)) {
+          return '必须包含字母'
+        }
+        return ''
+      },
+      formPwdStrengthScore () {
+        let result = zxcvbn(this.formPwd)
+        return result.score + 1
+      },
+      formPwdProgressVariant () {
+        let score = this.formPwdStrengthScore
+        if (score < 2) {
+          return 'danger'
+        } else if (score < 4) {
+          return 'warning'
+        } else {
+          return 'success'
+        }
+      },
+      formConfirmPwdState () {
+        return this.formConfirmPwd ? this.formConfirmPwd === this.formPwd : null
+      },
+      formClassNameState () {
+        return this.formClassName ? this.formClassName.length <= 24 : null
       },
       formUserNameState () {
-        return this.formUserName.length > 1 && this.formUserName.length <= 16
+        return this.formUserName ? this.formUserName.length > 1 && this.formUserName.length <= 16 : null
       },
       formAccountState () {
-        return this.formAccount.length >= 1 && this.formAccount.length <= 64
+        return this.formAccount ? this.formAccount.length >= 1 && this.formAccount.length <= 64 && this.formAccountFeedbackState !== false : null
       },
       formMottoState () {
-        return this.formMotto.length <= 255
+        return this.formMotto ? this.formMotto.length <= 255 : null
+      },
+      loginModalOkDisabled () {
+        return !(this.loginUid && this.loginPwd && this.loginServerFeedbackState !== false)
       },
       addUserModalOkDisabled () {
-        return !(this.formUserNameState && this.formAccountState && this.formMottoState && this.formAccountAvailable)
+        return !(this.formUidState && this.formPwdState && this.formConfirmPwdState &&
+          this.formClassNameState !== false && this.formUserNameState && this.formAccountState && this.formMottoState !== false
+        )
+      },
+      changePwdModalOkDisabled () {
+        return !(this.formPwdState && this.formConfirmPwdState)
+      },
+      changeMottoModalOkDisabled () {
+        return !(this.formMottoState !== false)
       }
     },
     created () {
+    },
+    mounted () {
       // 添加响应拦截器
       this.$ajax.interceptors.response.use(resp => resp.data, error => {
         console.error(error)
         this.showMsgModal('服务器错误', error)
         return Promise.reject(error)
       })
-    },
-    mounted () {
       this.getRank()
       this.getCrawlStatus()
     },
