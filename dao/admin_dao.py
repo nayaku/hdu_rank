@@ -31,7 +31,7 @@ class Admin:
         parameters = []
         sql_request_string = []
         for filed in self.__dict__.items():
-            if filed[1]:
+            if filed[1] and filed[0] != 'id':
                 sql_request_string.append(str.format("`{0}`=%s", filed[0]))
                 parameters.append(filed[1])
         sql = '''UPDATE admins SET ''' + ','.join(sql_request_string) + ''' WHERE id=%s'''

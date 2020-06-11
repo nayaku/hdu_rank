@@ -64,7 +64,7 @@ def crawl_user_info(user: User) -> bool:
     if solved_num != user.solved_num:
         user.solved_num = solved_num
         user.status = User.ACTIVE_STATUS
-        user.update()
+        user.update_solved_num()
         return True
     else:
         return False

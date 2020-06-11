@@ -2,13 +2,34 @@
 
 # 说明
 
-HDU_Rank是一款基于基于Flask、Vue.js和BootstrapVue的杭电刷题排行榜爬虫。
+本项目是一款基于基于Flask和BootstrapVue的杭电刷题排行榜前后端分离的网站。
 
 DEMO页面：
 
 ![demo_img](demo_img.png)
 
-注意：由于本项目中使用到了Python3的uWSGI库，因此只能运行在Linux平台上面。
+<font color="red">注意：由于本项目中使用到了Python3的uWSGI库，因此只能运行在Linux平台上面。</font>
+
+### 3.0 我们添加了什么？
+
+- [x] 用户登录、修改、注册
+- [x] 用户自定义网页代码
+- [x] 管理员添加与删除
+- [x] 管理员管理员用户以及其他管理员
+- [ ] 一键初始化和运行
+- [ ] 使用pip直接安装
+
+### 2.0原有的功能
+
+- [x] 添加用户
+- [x] 爬取用户题数
+- [x] 显示公告
+- [x] 管理员登录
+- [x] 管理员管理用户
+- [x] 爬虫状态管理
+
+
+
 
 # 快速入门
 
@@ -32,7 +53,7 @@ cd lnmp1.6beta
 # 安装screen和git（如果已经安装可以跳过）
 yum install screen git vim -y
 # 安装所需的PIP库
-pip3 install flask pymysql requests uWSGI flask_cors
+pip3 install flask pymysql requests uWSGI flask_cors pysha3
 # 增加hdurank的用户名和组
 /usr/sbin/groupadd hdurank
 /usr/sbin/useradd -g hdurank hdurank
@@ -40,7 +61,7 @@ pip3 install flask pymysql requests uWSGI flask_cors
 git clone https://github.com/736248591/hdu_rank.git
 # 建立数据库
 cd hdu_rank
-mysql -u你的数据库用户名 -p你的数据库密码 < hdu_rank.sql
+mysql -u你的数据库用户名 -p你的数据库密码 < hdu_rank2.sql
 # 新建域名
 lnmp vhost add
 # 按照提示填写你的域名和项目本地存放的地址。注意，网站的根目录填写的是hdu_rank/static
@@ -81,7 +102,7 @@ uwsgi --ini uwsgi.ini
   {
       status: 操作状态 Boolean,
       notice: 公告 string,
-      crawl_status: 爬虫状态 union("runable","running","sleeping","stopped")
+      crawl_status: 爬虫状态 union("runnable","running","sleeping","stopped")
       users: 用户列表（当状态为True时，拥有这个字段）
       [
           {
@@ -105,6 +126,11 @@ uwsgi --ini uwsgi.ini
           solved_num 题数 int,
           status 状态 union("unchecked","fetching","active"),
           html 自定义页面代码 string
+      },
+      admin:{
+          id: 管理员ID int,
+          uid: 管理员 string,
+          is_super: 是否可以管理其他用户 bool,
       }
   }
 ```
@@ -208,7 +234,7 @@ uwsgi --ini uwsgi.ini
 | 字段名 | 数据类型 | 默认值 |  描   述   |
 | :----: | :------: | :----: | :--------: |
 | uid	 |   unsigned int |        | 管理员ID  |
-| pwd	 |   string |        | 密码，sha3-512(md5(原始密码))  |
+| pwd	 |   string |        | 密码，sha3-512(原始密码)，重复加密6次 |
 **响应数据：**
 ```
   {
@@ -262,7 +288,7 @@ uwsgi --ini uwsgi.ini
 | id	 |   unsigned int |        | ID  |
 | uid	 |   string(16) |        | 管理员ID  |
 | is_super	 |   bool |        | 是否可以管理其他用户  |
-| pwd	 |   string(128) |        | 密码，sha3-512(md5(原始密码))  |
+| pwd	 |   string(128) |        | 密码，sha3-512(原始密码)，重复加密6次  |
 **响应数据：**
 ```
   {
@@ -336,6 +362,10 @@ yarn build
 ```
 
 ## 更新日记
+
+### 2020年6月11日（3.0）
+
+- 大幅度修改和重构前端和后端代码。
 
 ### 2020年3月17日
 

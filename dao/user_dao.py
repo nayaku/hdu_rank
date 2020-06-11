@@ -22,7 +22,6 @@ class User:
         self.status = None
         self.html = None
 
-
     # @staticmethod
     # def validate_account_in_hdu(account: str) -> bool:
     #     """
@@ -33,6 +32,14 @@ class User:
     #         return True
     #     else:
     #         return False
+    def update_solved_num(self) -> bool:
+        sql = '''UPDATE users SET solved_num=%s WHERE id=%s'''
+        connect = get_connect()
+        with connect.cursor() as cursor:
+            cursor.execute(sql, (self.solved_num, self.id))
+            connect.commit()
+        return True
+
     def update(self) -> bool:
         """
         更新用户
@@ -43,7 +50,7 @@ class User:
             parameters = []
             sql_request_string = []
             for filed in self.__dict__.items():
-                if filed[1]:
+                if filed[1] and filed[0] != 'id':
                     sql_request_string.append(str.format("`{0}`=%s", filed[0]))
                     parameters.append(filed[1])
             sql = '''UPDATE users SET ''' + ','.join(sql_request_string) + ''' WHERE id=%s'''

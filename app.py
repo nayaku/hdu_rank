@@ -16,7 +16,7 @@ my_setting.read_admin_password()
 app = Flask(__name__)
 env_dist = os.environ
 if 'FLASK_ENV' in env_dist and env_dist['FLASK_ENV'] == 'development':
-    app.config['SECRET_KEY'] = 'hui1abUIU,W<>Q{}@^T&^$T()(@$!!_H1FBV3VHG.xcdfghSX045D4FG5H51ug44848416'
+    app.config['SECRET_KEY'] = 'ui1abUIU,W<>Q{}@^T&^$T()(@$!!_H1FBV3VHG.xcdfghSX045D4FG5H51ug44848416'
 else:
     app.config['SECRET_KEY'] = 'hui1abUIU,W<>Q{}@^T&^$T()(@$!!_H1FBV3VHG.xcdfghSX045D4FG5H51ug44848416' + str(
         os.urandom(64))
@@ -267,16 +267,19 @@ def put_admin():
             admin.__dict__[key] = request.args.get(key)
             if key == 'id':
                 admin.id = int(admin.id)
-            elif key == 'is_super':
-                admin.is_super = admin.is_super == 'True'
 
     if current_admin:
         if admin.id:
             # 更新
             if admin.id == current_admin['id'] or current_admin['is_super']:
-                res = __validate_admin('uid', admin.uid) or __validate_admin('pwd', admin.pwd)
-                if res:
-                    return res
+                if admin.uid:
+                    res = __validate_admin('uid', admin.uid)
+                    if res:
+                        return res
+                elif admin.pwd:
+                    res = __validate_admin('pwd', admin.pwd)
+                    if res:
+                        return res
                 admin.update()
                 if admin.id == current_admin['id']:
                     session.clear()

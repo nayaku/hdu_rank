@@ -14,10 +14,16 @@
           <b-dropdown-item @click="registerUserModalShow=true">注册</b-dropdown-item>
         </b-nav-item-dropdown>
         <b-nav-item-dropdown v-else-if="user" :text="`欢迎，${user.uid}`" right>
-          <b-dropdown-item @click="changePwdModalShow=true">修改密码</b-dropdown-item>
+          <b-dropdown-item @click="showChangePwdModal('user',user)">修改密码</b-dropdown-item>
           <b-dropdown-item @click="changeMottoModalShow=true">修改格言</b-dropdown-item>
           <b-dropdown-item @click="changeUserHtmlModalShow=true">自定义页面</b-dropdown-item>
-          <b-dropdown-item @click="removeUser()">永久删除账号</b-dropdown-item>
+          <b-dropdown-item @click="remove()">永久删除账号</b-dropdown-item>
+          <b-dropdown-item @click="logout">登出</b-dropdown-item>
+        </b-nav-item-dropdown>
+        <b-nav-item-dropdown v-else-if="admin" :text="`欢迎，${admin.uid}`" right>
+          <b-dropdown-item @click="showChangePwdModal('admin',admin)">修改密码</b-dropdown-item>
+          <b-dropdown-item @click="addNoticeModalShow=true">修改公告</b-dropdown-item>
+          <b-dropdown-item v-if="admin.is_super" @click="listAdminModalShow=true">管理员列表</b-dropdown-item>
           <b-dropdown-item @click="logout">登出</b-dropdown-item>
         </b-nav-item-dropdown>
       </b-navbar-nav>
@@ -36,23 +42,42 @@
     <div class="py-2">
       <b-container>
         <b-row>
-          <b-table :items="users" :fields="user_fields" :responsive="true">
+          <b-table :items="users" :fields="userTableFields" :responsive="true" primary-key="id">
             <template v-slot:cell(index)="data">
               {{data.index +1 }}
             </template>
 
             <template v-slot:cell(solved_num)="data">
-              <template v-if="data.value">
+              <template v-if="data.item.solved_num!==null">
                 {{data.value}}
               </template>
               <span class="text-warning" v-else-if="data.item.status==='unchecked'">
                 未确认
               </span>
-              <span class="text-warning" v-else>
+              <span class="text-success" v-else>
                 爬取中
               </span>
             </template>
+            <template v-slot:cell(operator)="data">
+              <b-dropdown right text="操作">
+                <b-dropdown-item @click="confirmUser(data.item.id)" variant="success"
+                                 :disabled="data.item.status!=='unchecked'">确认用户
+                </b-dropdown-item>
+                <b-dropdown-item @click="showChangePwdModal('user',data.item)">修改密码</b-dropdown-item>
+                <b-dropdown-item @click="remove(data.item.id)" variant="danger">删除用户</b-dropdown-item>
+              </b-dropdown>
+            </template>
           </b-table>
+        </b-row>
+        <b-row>
+          爬虫状态：
+          <span :class="crawlStatusClass" v-text="crawlStatusString"></span>
+          <template v-if="admin">
+            <b-button v-if="crawlStatus!=='stopped'" variant="danger" @click="stopCrawl">停止
+            </b-button>
+            <b-button v-else variant="primary" @click="beginCrawl">启动</b-button>
+          </template>
+
         </b-row>
       </b-container>
     </div>
@@ -223,7 +248,7 @@
 
     <!-- 修改密码 -->
     <b-modal title="修改密码" ok-title="确认" cancel-title="取消" @ok="changePwd" v-model="changePwdModalShow"
-             :ok-disabled="changePwdModalOkDisabled" @show="formReset">
+             :ok-disabled="changePwdModalOkDisabled" @show="formReset" @close="closeChangePwdModal">
       <b-form>
         <b-form-group
           label="密码：">
@@ -284,27 +309,41 @@
 
     </b-modal>
 
-    <!-- 管理员登录弹窗 -->
-    <b-modal id="adminLoginModal" title="管理员登录" ok-title="确认" cancel-title="取消" @ok="adminLogin"
-             v-model="adminLoginModalShow">
-      <b-form @submit="adminLogin">
-        <b-form-group
-          label="密码：">
-          <b-form-input
-            v-model="adminPwd"
-            type="password"
-            required
-            placeholder="请在这里输入管理员密码。">
-
-          </b-form-input>
-        </b-form-group>
+    <!-- 管理员列表 -->
+    <b-modal size="xl" title="管理员列表" v-model="listAdminModalShow" @show="getAdminList" hide-footer>
+      <b-table :items="adminList" :fields="adminFields" primary-key="id">
+        <template v-slot:cell(is_super)="data">
+          <b-button variant="link" @click="changeSuperAdmin(data.item)" v-if="data.item.id!==admin.id">
+            <span class="text-success" v-if="data.value">Yes</span>
+            <span class="text-danger" v-else>No</span>
+          </b-button>
+          <!--          <b-form-checkbox v-model="data.value" @click="changeSuperAdmin(data.item)"></b-form-checkbox>-->
+        </template>
+        <template v-slot:cell(operator)="data">
+          <b-button variant="warning" @click="showChangePwdModal('admin',data.item)">修改密码</b-button>
+          <b-button variant="danger" @click="remove(data.item.id,false)">永久删除</b-button>
+        </template>
+      </b-table>
+      <b-form inline>
+        <label for="admin_form_uid_input">登录账号</label>
+        <b-form-input id="admin_form_uid_input" v-model="formAdminUid" :state="formAdminUidState"
+                      @blur="validateFormAdminUid" required></b-form-input>
+        <b-form-invalid-feedback :state="formAdminUidState">
+          {{formAdminUidServerFeedbackString}}
+        </b-form-invalid-feedback>
+        <b-form-checkbox v-model="formAdminIsSuper">超级管理员</b-form-checkbox>
+        <label for="admin_form_pwd_input">密码</label>
+        <b-form-input v-model="formAdminPwd" type="password" id="admin_form_pwd_input" required></b-form-input>
+        <b-button :disabled="addAdminButtonDisabled" @click="addAdmin">添加</b-button>
       </b-form>
     </b-modal>
+
     <!-- 消息弹窗 -->
     <b-modal id="msgModal" size="sm" :title="msgTitle" ok-title="确认" cancel-title="取消" @ok="msgOkCallback"
              @cancel="msgCancelCallback" :ok-only="msgOkOnly" v-model="msgVisible">
       <p :class="msgClass" v-html="msg"></p>
     </b-modal>
+
     <!-- 添加公告 -->
     <b-modal id="addNoticeModal" title="添加公告" ok-title="确认" cancel-title="取消" @ok="addNotice" size="xl"
              v-model="addNoticeModalShow">
@@ -335,38 +374,6 @@
       return {
         crawlStatus: '',
         isAdmin: false,
-        user_fields: [
-          {
-            key: 'index',
-            label: ' '
-          },
-          {
-            key: 'class_name',
-            label: '班级',
-            sortable: true,
-            thClass: 'rank-td',
-            tdClass: 'rank-td'
-          },
-          {
-            key: 'name',
-            label: '姓名',
-            sortable: true,
-            thClass: 'rank-td',
-            tdClass: 'rank-td'
-          },
-          {
-            key: 'motto',
-            label: '格言',
-            tdClass: 'table-text-wrap',
-            thClass: 'rank-td'
-          },
-          {
-            key: 'solved_num',
-            label: '题数',
-            thClass: 'rank-td',
-            tdClass: 'rank-td'
-          }
-        ],
         users: [],
         user: null,
         admin: null,
@@ -406,7 +413,32 @@
         changeMottoModalShow: false,
         changeUserHtmlModalShow: false,
         userHtml: '',
-        isAdminLoginMode: false
+        isAdminLoginMode: false,
+        currentEditPwdObj: null,
+        listAdminModalShow: false,
+        adminList: [],
+        adminFields:
+          [
+            {
+              key: 'uid',
+              label: '登录账号',
+              sortable: true
+            },
+            {
+              key: 'is_super',
+              label: '超级管理员',
+              sortable: true
+            },
+            {
+              key: 'operator',
+              label: ''
+            }
+          ],
+        formAdminUid: '',
+        formAdminUidServerFeedbackState: null,
+        formAdminUidServerFeedbackString: '',
+        formAdminIsSuper: false,
+        formAdminPwd: ''
       }
     },
     methods: {
@@ -416,12 +448,10 @@
           this.newNotice = this.notice = resp['notice']
           this.user = resp['user']
           this.admin = resp['admin']
+          this.crawlStatus = resp['crawl_status']
           if (this.user && this.user.html) {
             console.log(this.user.html)
             $('body').append(this.user.html)
-            // let div = document.createElement('div')
-            // div.innerHTML = this.user.html
-            // document.body.appendChild(div)
           }
         })
       },
@@ -504,36 +534,52 @@
           uid: this.loginUid,
           pwd: pwd
         }
-        if (this.isAdminLoginMode) {
-
-        } else {
-          this.$ajax.get('/login', { params }).then(resp => {
-            if (resp.status) {
-              this.loginUid = this.loginPwd = ''
-              this.getRank()
-              this.loginModalShow = false
-            } else {
-              this.loginServerFeedbackState = false
-              this.loginServerFeedbackString = resp.msg
-            }
-          })
-        }
+        let url = this.isAdminLoginMode ? '/login_admin' : '/login'
+        this.$ajax.get(url, { params }).then(resp => {
+          if (resp.status) {
+            this.loginUid = this.loginPwd = ''
+            this.getRank()
+            this.loginModalShow = false
+          } else {
+            this.loginServerFeedbackState = false
+            this.loginServerFeedbackString = resp.msg
+          }
+        })
+      },
+      showChangePwdModal (type, obj) {
+        this.currentEditPwdObj = { type, obj }
+        this.changePwdModalShow = true
+      },
+      closeChangePwdModal () {
+        this.currentEditPwdObj = null
+        this.changePwdModalShow = false
       },
       changePwd (event) {
         event.preventDefault()
         let sha = new SHA('SHA3-512', 'TEXT', { encoding: 'UTF8', numRounds: 6 })
         sha.update(this.formPwd)
         let pwd = sha.getHash('HEX')
-        let params = {
-          id: this.user.id,
-          pwd: pwd
+        let params = { pwd }
+        let url = ''
+        params.id = this.currentEditPwdObj.obj.id
+        if (this.currentEditPwdObj.type === 'user') {
+          url = '/put_user'
+        } else {
+          url = '/put_admin'
         }
-        this.$ajax.get('/put_user', { params }).then(resp => {
+
+        this.$ajax.get(url, { params }).then(resp => {
           if (resp.status) {
-            this.showMsgModal('提示', '修改成功！请返回登录。', () => {
-              this.getRank()
-              this.changePwdModalShow = false
-            })
+            if (this.currentEditPwdObj.obj !== this.user && this.currentEditPwdObj.obj !== this.admin) {
+              this.showMsgModal('提示', '修改成功！', () => {
+                this.changePwdModalShow = false
+              })
+            } else {
+              this.showMsgModal('提示', '修改成功！请返回登录。', () => {
+                this.getRank()
+                this.changePwdModalShow = false
+              })
+            }
           } else {
             this.showMsgModal('错误', resp.msg)
           }
@@ -578,12 +624,13 @@
           }
         })
       },
-      removeUser (id) {
+      remove (id, isUser = true) {
         if (!id) {
           id = this.user.id
         }
+        let url = isUser ? '/remove_user' : '/remove_admin'
         this.showMsgModal('提示', '是否确认删除？<br/>注意：此操作不可逆！', () => {
-          this.$ajax.get('/remove_user', { params: { id } }).then(resp => {
+          this.$ajax.get(url, { params: { id } }).then(resp => {
             if (resp.status) {
               this.getRank()
             } else {
@@ -594,7 +641,11 @@
         }, false)
       },
       confirmUser (id) {
-        this.$ajax.get('/confirm', { params: { id } }).then(resp => {
+        let params = {
+          id,
+          status: 'fetching'
+        }
+        this.$ajax.get('/put_user', { params }).then(resp => {
           if (resp.status) {
             this.getRank()
           } else {
@@ -602,46 +653,72 @@
           }
         })
       },
-      adminLogin (event) {
-        event.preventDefault()
-        let sha = new SHA('SHA3-512', 'TEXT')
-        let timeToken = Math.floor((new Date()).getTime() / 10000)
-        console.log('time:' + timeToken)
-        sha.update(timeToken + this.adminPwd + timeToken)
-        let pwd = sha.getHash('HEX')
-        console.log('token:' + pwd)
-        this.$ajax.get('/login_admin', { params: { pwd } }).then(resp => {
+      getAdminList () {
+        this.$ajax.get('/list_admin').then(resp => {
           if (resp.status) {
-            this.adminPwd = ''
-            this.getLoginInfo()
-            this.adminLoginModalShow = false
-          } else {
-            this.showMsgModal('错误', resp['msg'])
-          }
-        })
-      },
-      adminLogout () {
-        this.$ajax.get('/logout_admin').then(resp => {
-          if (resp.status) {
-            this.getLoginInfo()
+            this.adminList = resp.admins
           } else {
             this.showMsgModal('错误', resp.msg)
           }
         })
       },
-      getLoginInfo () {
-        this.$ajax.get('/login').then(resp => {
+      changeSuperAdmin (admin) {
+        let params = {
+          id: admin.id,
+          is_super: 1 - admin.is_super
+        }
+        this.$ajax.get('/put_admin', { params }).then(resp => {
           if (resp.status) {
-            this.isAdmin = resp['is_admin']
+            this.getAdminList()
           } else {
-            // this.showMsgModal('错误', resp['msg'])
+            this.showMsgModal('错误', resp.msg)
+          }
+        })
+      },
+      addAdminFormReset () {
+        this.formAdminUid = ''
+        this.formAdminUidServerFeedbackState = null
+        this.formAdminUidServerFeedbackString = ''
+        this.formAdminPwd = ''
+      },
+      validateFormAdminUid () {
+        if (this.formAdminUid) {
+          this.formAdminUidServerFeedbackState = false
+          this.formAdminUidServerFeedbackString = '检测中……'
+          let params = {
+            field: 'uid',
+            value: this.formAdminUid
+          }
+          this.$ajax.get('/validate_admin', { params }).then(resp => {
+            this.formAdminUidServerFeedbackState = resp.status
+            if (!resp.status) {
+              this.formAdminUidServerFeedbackString = resp.msg
+            }
+          })
+        }
+      },
+      addAdmin () {
+        let sha = new SHA('SHA3-512', 'TEXT', { encoding: 'UTF8', numRounds: 6 })
+        sha.update(this.formAdminPwd)
+        let pwd = sha.getHash('HEX')
+        let params = {
+          uid: this.formAdminUid,
+          pwd: pwd,
+          is_super: this.formAdminIsSuper ? 1 : 0
+        }
+        this.$ajax.get('/put_admin', { params }).then(resp => {
+          if (resp.status) {
+            this.addAdminFormReset()
+            this.getAdminList()
+          } else {
+            this.showMsgModal('错误', resp.msg)
           }
         })
       },
       beginCrawl () {
         this.$ajax.get('/crawl_start').then(resp => {
           if (resp.status) {
-            this.getCrawlStatus()
+            this.getRank()
           } else {
             this.showMsgModal('错误', resp['msg'])
           }
@@ -650,16 +727,7 @@
       stopCrawl () {
         this.$ajax.get('/crawl_stop').then(resp => {
           if (resp.status) {
-            this.getCrawlStatus()
-          } else {
-            this.showMsgModal('错误', resp['msg'])
-          }
-        })
-      },
-      getCrawlStatus () {
-        this.$ajax.get('/crawl_status').then(resp => {
-          if (resp.status) {
-            this.crawlStatus = resp['crawl_status']
+            this.getRank()
           } else {
             this.showMsgModal('错误', resp['msg'])
           }
@@ -675,11 +743,13 @@
         this.msgOkOnly = onlyOk
         this.msgVisible = true
       },
-      addNotice () {
+      addNotice (event) {
+        event.preventDefault()
         let params = { notice: this.newNotice }
         this.$ajax.get('/add_notice', { params }).then(resp => {
           if (resp.status) {
             this.showMsgModal('提示', '操作成功！', () => {
+              this.addNoticeModalShow = false
               this.getRank()
             })
           } else {
@@ -698,8 +768,20 @@
       }
     },
     computed: {
+      crawlStatusString () {
+        if (this.crawlStatus === 'runnable') {
+          return '未运行'
+        } else if (this.crawlStatus === 'running') {
+          return '正在运行'
+        } else if (this.crawlStatus === 'sleeping') {
+          return '睡眠中'
+        } else if (this.crawlStatus === 'stopped') {
+          return '已停止'
+        }
+        return ''
+      },
       crawlStatusClass () {
-        return this.crawlStatus === 'stopped' ? 'text-primary' : 'text-danger'
+        return this.crawlStatus !== 'stopped' ? 'text-primary' : 'text-danger'
       },
       formUidState () {
         return this.formUid ? this.formUid.length > 1 && this.formUid.length <= 16 && this.formUidFeedbackState !== false : null
@@ -765,6 +847,68 @@
       },
       changeMottoModalOkDisabled () {
         return !(this.formMottoState !== false)
+      },
+      userTableFields () {
+        let fields = [
+          {
+            key: 'index',
+            label: ' '
+          },
+          {
+            key: 'class_name',
+            label: '班级',
+            sortable: true,
+            thClass: 'rank-td',
+            tdClass: 'rank-td'
+          },
+          {
+            key: 'name',
+            label: '姓名',
+            sortable: true,
+            thClass: 'rank-td',
+            tdClass: 'rank-td'
+          },
+          {
+            key: 'motto',
+            label: '格言',
+            tdClass: 'table-text-wrap',
+            thClass: 'rank-td'
+          },
+          {
+            key: 'solved_num',
+            label: '题数',
+            thClass: 'rank-td',
+            tdClass: 'rank-td'
+          }
+        ]
+        if (this.admin) {
+          fields.push(
+            {
+              key: 'uid',
+              label: '登录账号',
+              thClass: 'rank-td',
+              tdClass: 'rank-td'
+            },
+            {
+              key: 'account',
+              label: '杭电账号',
+              thClass: 'rank-td',
+              tdClass: 'rank-td'
+            },
+            {
+              key: 'operator',
+              label: '',
+              thClass: 'rank-td',
+              tdClass: 'rank-td'
+            })
+        }
+        return fields
+      },
+      formAdminUidState () {
+        return this.formAdminUid ? this.formAdminUid.length > 1 && this.formAdminUid.length <= 16 && this.formAdminUidServerFeedbackState !== false : null
+      },
+      addAdminButtonDisabled () {
+        return !(this.formAdminUidState && this.formAdminPwd)
       }
     },
     created () {
@@ -777,7 +921,6 @@
         return Promise.reject(error)
       })
       this.getRank()
-      this.getCrawlStatus()
     },
     beforeDestroy () {
       this.formMotto.destroy()
