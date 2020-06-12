@@ -365,6 +365,16 @@
 
   let SHA = require('jssha')
 
+  let generatePwd = function (pwd) {
+    for (let i = 0; i < 6; i++) {
+      let sha = new SHA('SHA3-512', 'TEXT', { encoding: 'UTF8' })
+      sha.update(pwd)
+      pwd = sha.getHash('HEX')
+    }
+
+    return pwd
+  }
+
   export default {
     components: {
       VueMarkdown
@@ -502,9 +512,7 @@
         this.formMotto = ''
       },
       registerUser () {
-        let sha = new SHA('SHA3-512', 'TEXT', { encoding: 'UTF8', numRounds: 6 })
-        sha.update(this.formPwd)
-        let pwd = sha.getHash('HEX')
+        let pwd = generatePwd(this.formPwd)
         let params = {
           uid: this.formUid,
           pwd: pwd,
@@ -527,9 +535,7 @@
       },
       login (event) {
         event.preventDefault()
-        let sha = new SHA('SHA3-512', 'TEXT', { encoding: 'UTF8', numRounds: 6 })
-        sha.update(this.loginPwd)
-        let pwd = sha.getHash('HEX')
+        let pwd = generatePwd(this.loginPwd)
         let params = {
           uid: this.loginUid,
           pwd: pwd
@@ -556,9 +562,7 @@
       },
       changePwd (event) {
         event.preventDefault()
-        let sha = new SHA('SHA3-512', 'TEXT', { encoding: 'UTF8', numRounds: 6 })
-        sha.update(this.formPwd)
-        let pwd = sha.getHash('HEX')
+        let pwd = generatePwd(this.formPwd)
         let params = { pwd }
         let url = ''
         params.id = this.currentEditPwdObj.obj.id
@@ -698,9 +702,7 @@
         }
       },
       addAdmin () {
-        let sha = new SHA('SHA3-512', 'TEXT', { encoding: 'UTF8', numRounds: 6 })
-        sha.update(this.formAdminPwd)
-        let pwd = sha.getHash('HEX')
+        let pwd = generatePwd(this.formAdminPwd)
         let params = {
           uid: this.formAdminUid,
           pwd: pwd,

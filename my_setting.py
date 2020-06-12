@@ -1,6 +1,4 @@
 import os
-import random
-import string
 
 # 主循环间隔时间(s)
 MAIN_LOOP_INTERVAL = 30 * 60
@@ -18,20 +16,8 @@ DB_PASSWORD = 'hr@hr'
 DB_NAME = 'hdu_rank'
 # 管理员密码
 ADMIN_PASSWORD = None
-
-
-def read_admin_password() -> None:
-    """
-    读取管理员密码
-    """
-    global ADMIN_PASSWORD
-    if not os.path.exists('admin.key'):
-        print('管理员密码不存在!')
-        exit(0)
-    else:
-        with open('admin.key', 'r') as f:
-            ADMIN_PASSWORD = f.read().strip()
-
+# 使用静态资源
+USE_STATIC = True
 # test
 # if __name__ == '__main__':
 # read_admin_password()

@@ -1,6 +1,5 @@
-from getpass import getpass
-
-from pymysql import Connection, connect
+import pymysql
+from pymysql import Connection, connect, cursors
 import sys
 import hashlib
 
@@ -20,27 +19,28 @@ print(
     '''
 )
 
-db_root_pwd = input("请输入root账号密码")
-with connect(DB_ADDR, 'root', db_root_pwd) as my_connect:
+db_root_pwd = input("请输入root账号密码：\n")
+con = pymysql.connect(host=DB_ADDR, user='root', password=db_root_pwd, autocommit=True)
+
+with con:
     sql = "show databases like '%s'" % DB_NAME
-    with my_connect.cursor() as cursor:
+    with con.cursor() as cursor:
         cursor.execute(sql)
         row = cursor.fetchone()
         if row:
             is_continue = input("已经存在%s数据库，是否确定重建？\n注意原有的数据会丢失！\n[y/n]" % DB_NAME)
             is_continue = is_continue.lower()
             if is_continue == 'y':
-                with my_connect.cursor() as cursor2:
-                    sql = 'DROP DATABASE %s' % DB_NAME
-                    cursor2.execute(sql)
-                    my_connect.commit()
+                sql = 'DROP DATABASE %s' % DB_NAME
+                cursor.execute(sql)
+            else:
+                exit(1)
 
-        with my_connect.cursor() as cursor2:
-            sql = "CREATE DATABASE `%s` CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci';" % DB_NAME
-            cursor2.execute(sql)
-            my_connect.commit()
-with connect(DB_ADDR, 'root', db_root_pwd, DB_NAME) as my_connect:
-    with my_connect.curor() as cursor:
+        sql = "CREATE DATABASE `%s` CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci';" % DB_NAME
+        cursor.execute(sql)
+
+    con.select_db(DB_NAME)
+    with con.cursor() as cursor:
         create_admins = '''
         CREATE TABLE `admins`  (
         `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -74,27 +74,26 @@ with connect(DB_ADDR, 'root', db_root_pwd, DB_NAME) as my_connect:
         cursor.execute(create_admins)
         cursor.execute(create_server_infos)
         cursor.execute(create_users)
-        my_connect.commit()
 
-    with my_connect.curor() as cursor:
+        sql = "DROP USER IF EXISTS `hr`@`127.0.0.1`"
+        cursor.execute(sql)
+
         sql = "CREATE USER `hr`@`127.0.0.1` IDENTIFIED BY 'hr@hr';"
         cursor.execute(sql)
         sql = 'GRANT ALL ON `%s`.* TO `hr`@`127.0.0.1`;' % DB_NAME.replace('_', '\\_')
         cursor.execute(sql)
-        my_connect.commit()
 
-    with my_connect.curor() as cursor:
         sql = "INSERT INTO server_infos(id,notice) VALUES(1, '')"
         cursor.execute(sql)
 
-        admin_uid = input('请输入超级管理员账号名：')
-        admin_pwd = getpass('请输入超级管理员密码：')
+        admin_uid = input('请输入超级管理员账号名：\n')
+        admin_pwd = input('请输入超级管理员密码：\n')
         admin_pwd = admin_pwd.encode('utf-8')
         for i in range(0, 6):
             s = hashlib.sha3_512()
             s.update(admin_pwd)
             admin_pwd = s.hexdigest().encode('utf-8')
+        sql = "INSERT INTO admins(uid,is_super,pwd) VALUES(%s,1,%s)"
+        cursor.execute(sql, (admin_uid, admin_pwd))
 
-        my_connect.commit()
-
-print('操作成功！')
+print('============================== 配置成功 ==============================')

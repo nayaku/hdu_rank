@@ -8,7 +8,7 @@ DEMO页面：
 
 ![demo_img](demo_img.png)
 
-<font color="red">注意：由于本项目中使用到了Python3的uWSGI库，因此只能运行在Linux平台上面。</font>
+
 
 ### 3.0 我们添加了什么？
 
@@ -16,7 +16,8 @@ DEMO页面：
 - [x] 用户自定义网页代码
 - [x] 管理员添加与删除
 - [x] 管理员管理员用户以及其他管理员
-- [ ] 一键初始化和运行
+- [x] 一键初始化和运行
+- [x] 可以在Windows和Linux上运行
 - [ ] 使用pip直接安装
 
 ### 2.0原有的功能
@@ -30,61 +31,30 @@ DEMO页面：
 
 
 
+# 环境需求
+
+操作系统：Windows或者Linux均可。
+python3.x	pip3	MySQL8.x
 
 # 快速入门
 
 ```shell
-# 依赖包
-yum install libffi-devel -y
-# 安装Python3（如果已经安装可以跳过）
-wget https://www.python.org/ftp/python/3.7.3/Python-3.7.3.tgz
-tar -zxvf Python-3.7.3.tgz
-cd Python-3.7.3
-./configure
-make && make install
-
-# 安装LNMP环境（如果已经安装可以跳过）
-wget http://soft.vpser.net/lnmp/lnmp1.6beta.tar.gz
-tar -zxvf lnmp1.6beta.tar.gz
-cd lnmp1.6beta
-./install.sh
-# 其中MySQL版本建议选择MySQL8，其余根据需求选择
-
-# 安装screen和git（如果已经安装可以跳过）
-yum install screen git vim -y
 # 安装所需的PIP库
-pip3 install flask pymysql requests uWSGI flask_cors pysha3
-# 增加hdurank的用户名和组
-/usr/sbin/groupadd hdurank
-/usr/sbin/useradd -g hdurank hdurank
+pip3 install flask pymysql requests flask_cors pysha3 tornado
+# 国内用户可以使用以下命令来替换上面命令
+pip3 install -i https://mirrors.ustc.edu.cn/pypi/web/simple/ flask pymysql requests flask_cors pysha3 tornado
 # 克隆本项目
 git clone https://github.com/736248591/hdu_rank.git
-# 建立数据库
+# 进入项目
 cd hdu_rank
-mysql -u你的数据库用户名 -p你的数据库密码 < hdu_rank2.sql
-# 新建域名
-lnmp vhost add
-# 按照提示填写你的域名和项目本地存放的地址。注意，网站的根目录填写的是hdu_rank/static
+# 运行安装助手
+python helper.py
+# 成功以后启动
+python run.py
 ```
-![vhost_add](vhost_add.jpg)
-```shell
-# 编辑NGINX的配置
-vim /usr/local/nginx/conf/vhost/你的域名.conf
-# 在server的子级location的同级加入以下内容。
-location ~* /api/{
-    include  uwsgi_params;
-    uwsgi_pass  127.0.0.1:5007;
-    client_max_body_size 35m;
-}
-# 重启nginx服务器
-lnmp nginx restart
-# 开启新的一个screen，这样在关闭终端以后程序不会被关闭
-screen -R hdu_rank
-# 创建管理员密码 
-vim admin.key
-# 启动服务器
-uwsgi --ini uwsgi.ini 
-```
+
+
+
 # 进阶开发
 
 ## 数据库逻辑表

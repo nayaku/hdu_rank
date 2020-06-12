@@ -1,19 +1,16 @@
 import os
 from typing import Optional
 
-from flask import Flask, jsonify, request, session
+from flask import Flask, jsonify, request, session, url_for, render_template, redirect
 from flask_cors import CORS
 from requests import HTTPError, TooManyRedirects, Timeout
 
 import hdu_crawl
-import my_setting
 from dao import user_dao, admin_dao, server_info
 from dao.admin_dao import Admin
 from dao.user_dao import User, exist_account, exist_uid
 
-my_setting.read_admin_password()
-
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='')
 env_dist = os.environ
 if 'FLASK_ENV' in env_dist and env_dist['FLASK_ENV'] == 'development':
     app.config['SECRET_KEY'] = 'ui1abUIU,W<>Q{}@^T&^$T()(@$!!_H1FBV3VHG.xcdfghSX045D4FG5H51ug44848416'
@@ -21,6 +18,11 @@ else:
     app.config['SECRET_KEY'] = 'hui1abUIU,W<>Q{}@^T&^$T()(@$!!_H1FBV3VHG.xcdfghSX045D4FG5H51ug44848416' + str(
         os.urandom(64))
 CORS(app, supports_credentials=True)
+
+
+@app.route('/')
+def index():
+    return redirect('/index.html')
 
 
 @app.route('/api/get_rank')
