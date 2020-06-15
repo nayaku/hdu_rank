@@ -1,3 +1,4 @@
+import platform
 import sys
 
 import asyncio
@@ -12,5 +13,8 @@ from app import app
 
 http_server = HTTPServer(WSGIContainer(app))
 http_server.listen(80)
+os_string = platform.system()
+if sys != "Windows":
+    http_server.start(0)
 print('Running on http://127.0.0.1/ (Press CTRL+C to quit)')
 IOLoop.instance().start()

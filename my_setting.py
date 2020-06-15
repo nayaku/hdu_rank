@@ -18,6 +18,8 @@ DB_NAME = 'hdu_rank'
 ADMIN_PASSWORD = None
 # 使用静态资源
 USE_STATIC = True
+CRAWL_HOST = '127.0.0.1'
+CRAWL_PORT = 5012
 # test
 # if __name__ == '__main__':
 # read_admin_password()

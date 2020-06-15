@@ -1,17 +1,16 @@
 import re
-import threading
+import socket
 import time
 import traceback
 from threading import Thread
-from typing import Optional, Callable, Any, Iterable, Mapping, List, Union
+from typing import Optional, Union
 
+import requests
 from requests import TooManyRedirects, Timeout, HTTPError
 from requests.adapters import HTTPAdapter
 
 from dao.user_dao import get_fetching_list, User
 from my_setting import *
-
-import requests
 
 
 def crawl_page(url: str, timeout: int = 8, max_retries: int = 5) -> str:
@@ -121,18 +120,62 @@ crawl_thread: Optional[CrawlThread] = None
 
 
 def crawl_start() -> None:
-    global crawl_thread
-    crawl_thread = CrawlThread()
-    crawl_thread.setDaemon(True)
-    crawl_thread.start()
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(0.4)
+            s.connect((CRAWL_HOST, CRAWL_PORT))
+            s.send(b'run')
+    except socket.timeout as e:
+        traceback.print_exc()
 
 
 def crawl_stop() -> None:
-    crawl_thread.stop()
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(0.4)
+            s.connect((CRAWL_HOST, CRAWL_PORT))
+            s.send(b'stop')
+    except socket.timeout as e:
+        traceback.print_exc()
 
 
 def crawl_status() -> str:
-    if crawl_thread:
-        return crawl_thread.status
-    else:
-        return 'stopped'
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(0.4)
+            s.connect((CRAWL_HOST, CRAWL_PORT))
+            s.send(b'status')
+            status = s.recv(8)
+            status = status.decode('utf-8')
+            return status
+    except socket.timeout:
+        traceback.print_exc()
+        return 'disconnect'
+
+
+if __name__ == '__main__':
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
+        server_socket.bind((CRAWL_HOST, CRAWL_PORT))
+        server_socket.listen()
+        print('socket启动：%s:%d' % (CRAWL_HOST, CRAWL_PORT))
+        while True:
+            client, addr = server_socket.accept()
+            with client:
+                op = client.recv(8)
+                op = op.decode('utf-8')
+                if op == 'run':
+                    if crawl_thread and crawl_thread.status != 'stopped':
+                        pass
+                    else:
+                        crawl_thread = CrawlThread()
+                        crawl_thread.setDaemon(True)
+                        crawl_thread.start()
+                elif op == 'status':
+                    if crawl_thread:
+                        msg = crawl_thread.status
+                    else:
+                        msg = 'stopped'
+                    client.send(msg.encode('utf-8'))
+                elif op == 'stop':
+                    if crawl_thread:
+                        crawl_thread.stop()

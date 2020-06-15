@@ -18,6 +18,7 @@ DEMO页面：
 - [x] 管理员管理员用户以及其他管理员
 - [x] 一键初始化和运行
 - [x] 可以在Windows和Linux上运行
+- [x] 多进程、高并发
 - [ ] 使用pip直接安装
 
 ### 2.0原有的功能
@@ -38,21 +39,75 @@ python3.x	pip3	MySQL8.x
 
 # 快速入门
 
+## 安装所需的运行环境
+``` sh
+# 安装所需的PIP库
+pip3 install flask pymysql requests flask_cors pysha3
+# 国内用户可以使用在pip安装时候添加参数，如：
+pip3 install -i https://mirrors.ustc.edu.cn/pypi/web/simple/ flask pymysql requests flask_cors pysha3
+```
+
+注：以下方式二选一即可
+
+## 1. 独立运行
+
+<font color='#CC0033'>注意在windows下tornado无法以多进程运行。</font>
+
 ```shell
 # 安装所需的PIP库
-pip3 install flask pymysql requests flask_cors pysha3 tornado
+pip3 install tornado
 # 国内用户可以使用以下命令来替换上面命令
-pip3 install -i https://mirrors.ustc.edu.cn/pypi/web/simple/ flask pymysql requests flask_cors pysha3 tornado
+pip3 install -i https://mirrors.ustc.edu.cn/pypi/web/simple/ tornado
 # 克隆本项目
 git clone https://github.com/736248591/hdu_rank.git
 # 进入项目
 cd hdu_rank
 # 运行安装助手
 python helper.py
-# 成功以后启动
-python run.py
+# 启动爬虫进程
+python hdu_crawl.py
+# 启动tornado
+python run_tornado.py
 ```
 
+## 2. 在NGINX下运行
+```sh
+# 安装所需的PIP库
+pip3 install uWSGI
+# 增加hdurank的用户名和组
+/usr/sbin/groupadd hdurank
+/usr/sbin/useradd -g hdurank hdurank
+# 新建域名
+lnmp vhost add
+# 按照提示填写你的域名和项目本地存放的地址。注意，网站的根目录填写的是hdu_rank/static
+```
+![vhost_add](vhost_add.jpg)
+```shell
+# 编辑NGINX的配置
+vim /usr/local/nginx/conf/vhost/你的域名.conf
+# 在server的子级location的同级加入以下内容。
+location ~* /api/{
+    include  uwsgi_params;
+    uwsgi_pass  127.0.0.1:5007;
+}
+# 重启nginx服务器
+lnmp nginx restart
+# 开启新的一个screen，这样在关闭终端以后程序不会被关闭
+screen -R hdu_rank
+# 创建管理员密码 
+vim admin.key
+# 修改服务器配置文件
+vim my_setting.py
+USE_STATIC 设置为False
+# 启动爬虫进程
+python hdu_crawl.py
+# 启动uwsgi服务器
+uwsgi --ini uwsgi.ini 
+```
+
+## 3. mod_wsgi(Apache)、其他独立WSGI容器、FastCGI、CGI
+
+这些方式可以查看[Flask官方中文文档](http://docs.jinkan.org/docs/flask/)，这里不再赘述。
 
 
 # 进阶开发
@@ -83,7 +138,7 @@ python run.py
               motto 格言 string,
               account 账号 string,
               solved_num 题数 int,
-              status 状态 union("unchecked","fetching","active")
+              status 状态 union("unchecked","fetching","active","disconnect")
           }
       ],
       user:{
@@ -113,6 +168,7 @@ python run.py
 | uid	 | string(16) |        | 账号  |
 | pwd	 | string(16) |    ""  | 密码，sha3-512(原始密码)，重复加密6次 |
 **响应数据：**
+
 ```
   {
       status: 操作状态 Boolean,
@@ -316,7 +372,7 @@ python run.py
       status: 操作状态 Boolean,
       mgs: 错误原因 (当状态为false时，拥有这个字段）string
   }
-  
+
 ```
 
 
@@ -324,7 +380,7 @@ python run.py
 ## 手动编译客户端
 
 安装Node.js和Yarn
-```shell
+​```shell
 cd hdu_rank
 yarn global add @vue/cli
 yarn install
@@ -421,3 +477,4 @@ yarn build
 #### 2019年4月9日 
 
 1.0 初次发布
+```
