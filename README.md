@@ -58,7 +58,9 @@ pip3 install -i https://mirrors.ustc.edu.cn/pypi/web/simple/ flask pymysql reque
 pip3 install tornado
 # 国内用户可以使用以下命令来替换上面命令
 pip3 install -i https://mirrors.ustc.edu.cn/pypi/web/simple/ tornado
-# 克隆本项目
+# 下载项目
+wget https://github.com/736248591/hdu_rank/archive/3.0.0.zip
+tar -zxvf 3.0.0.zip
 git clone https://github.com/736248591/hdu_rank.git
 # 进入项目
 cd hdu_rank

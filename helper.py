@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import pymysql
 from pymysql import Connection, connect, cursors
 import sys

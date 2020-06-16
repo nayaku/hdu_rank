@@ -779,11 +779,18 @@
           return '睡眠中'
         } else if (this.crawlStatus === 'stopped') {
           return '已停止'
+        } else if (this.crawlStatus === 'disconnect') {
+          return '未连接'
         }
         return ''
       },
       crawlStatusClass () {
-        return this.crawlStatus !== 'stopped' ? 'text-primary' : 'text-danger'
+        if (this.crawlStatus === 'disconnect') {
+          return 'text-danger'
+        } else if (this.crawlStatus === 'stopped') {
+          return 'text-warning'
+        }
+        return 'text-primary'
       },
       formUidState () {
         return this.formUid ? this.formUid.length > 1 && this.formUid.length <= 16 && this.formUidFeedbackState !== false : null
