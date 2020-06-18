@@ -126,7 +126,7 @@ def crawl_start() -> None:
             s.settimeout(0.4)
             s.connect((CRAWL_HOST, CRAWL_PORT))
             s.send(b'run')
-    except socket.timeout as e:
+    except socket.error:
         traceback.print_exc()
 
 
@@ -136,7 +136,7 @@ def crawl_stop() -> None:
             s.settimeout(0.4)
             s.connect((CRAWL_HOST, CRAWL_PORT))
             s.send(b'stop')
-    except socket.timeout as e:
+    except socket.error:
         traceback.print_exc()
 
 
@@ -149,7 +149,7 @@ def crawl_status() -> str:
             status = s.recv(8)
             status = status.decode('utf-8')
             return status
-    except socket.timeout:
+    except socket.error:
         traceback.print_exc()
         return 'disconnect'
 

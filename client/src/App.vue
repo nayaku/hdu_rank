@@ -328,9 +328,9 @@
         <label for="admin_form_uid_input">登录账号</label>
         <b-form-input id="admin_form_uid_input" v-model="formAdminUid" :state="formAdminUidState"
                       @blur="validateFormAdminUid" required></b-form-input>
-        <b-form-invalid-feedback :state="formAdminUidState">
+        <b-form-text text-variant="danger" tag="div" v-if="!formAdminUidState">
           {{formAdminUidServerFeedbackString}}
-        </b-form-invalid-feedback>
+        </b-form-text>
         <b-form-checkbox v-model="formAdminIsSuper">超级管理员</b-form-checkbox>
         <label for="admin_form_pwd_input">密码</label>
         <b-form-input v-model="formAdminPwd" type="password" id="admin_form_pwd_input" required></b-form-input>
@@ -914,7 +914,7 @@
         return fields
       },
       formAdminUidState () {
-        return this.formAdminUid ? this.formAdminUid.length > 1 && this.formAdminUid.length <= 16 && this.formAdminUidServerFeedbackState !== false : null
+        return this.formAdminUid ? this.formAdminUid.length >= 1 && this.formAdminUid.length <= 16 && this.formAdminUidServerFeedbackState !== false : null
       },
       addAdminButtonDisabled () {
         return !(this.formAdminUidState && this.formAdminPwd)
