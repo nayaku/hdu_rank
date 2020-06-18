@@ -71,7 +71,7 @@ with con:
         cursor.execute(create_server_infos)
         cursor.execute(create_users)
 
-        sql = "DROP USER IF EXISTS `hr`@`127.0.0.1`"
+        sql = "DROP USER IF EXISTS `hr`@`localhost`"
         cursor.execute(sql)
 
         sql = "CREATE USER `hr`@`localhost` IDENTIFIED BY 'hr@hr';"
