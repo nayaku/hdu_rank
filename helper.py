@@ -1,11 +1,6 @@
 #!/usr/bin/python3
-import pymysql
-from pymysql import Connection, connect, cursors
-import sys
 import hashlib
-
-if sys.version_info < (3, 6):
-    import sha3
+import pymysql
 
 from my_setting import DB_NAME, DB_ADDR
 
@@ -79,9 +74,9 @@ with con:
         sql = "DROP USER IF EXISTS `hr`@`127.0.0.1`"
         cursor.execute(sql)
 
-        sql = "CREATE USER `hr`@`127.0.0.1` IDENTIFIED BY 'hr@hr';"
+        sql = "CREATE USER `hr`@`localhost` IDENTIFIED BY 'hr@hr';"
         cursor.execute(sql)
-        sql = 'GRANT ALL ON `%s`.* TO `hr`@`127.0.0.1`;' % DB_NAME.replace('_', '\\_')
+        sql = 'GRANT ALL ON `%s`.* TO `hr`@`localhost`;' % DB_NAME.replace('_', '\\_')
         cursor.execute(sql)
 
         sql = "INSERT INTO server_infos(id,notice) VALUES(1, '')"

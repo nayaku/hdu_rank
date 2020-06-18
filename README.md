@@ -42,7 +42,7 @@ python3.x	pip3	MySQL8.x
 ## 安装所需的运行环境
 ``` sh
 # 安装所需的PIP库
-pip3 install flask pymysql requests flask_cors pysha3
+pip3 install flask pymysql requests flask_cors
 # 国内用户可以使用在pip安装时候添加参数，如：
 pip3 install -i https://mirrors.ustc.edu.cn/pypi/web/simple/ flask pymysql requests flask_cors pysha3
 ```
@@ -61,15 +61,15 @@ pip3 install -i https://mirrors.ustc.edu.cn/pypi/web/simple/ tornado
 # 下载项目
 wget https://github.com/736248591/hdu_rank/archive/3.0.0.zip
 tar -zxvf 3.0.0.zip
-git clone https://github.com/736248591/hdu_rank.git
+cd 3.0.0
 # 进入项目
 cd hdu_rank
 # 运行安装助手
-python helper.py
+python3 helper.py
 # 启动爬虫进程
-python hdu_crawl.py
+python3 hdu_crawl.py
 # 启动tornado
-python run_tornado.py
+python3 run_tornado.py
 ```
 
 ## 2. 在NGINX下运行
@@ -382,7 +382,8 @@ uwsgi --ini uwsgi.ini
 ## 手动编译客户端
 
 安装Node.js和Yarn
-​```shell
+
+```shell
 cd hdu_rank
 yarn global add @vue/cli
 yarn install
@@ -391,9 +392,15 @@ yarn build
 
 ## 更新日记
 
-### 2020年6月11日（3.0）
+### 2020年6月18日（3.0）
 
 - 大幅度修改和重构前端和后端代码。
+- 增加了用户登录、修改、注册功能。
+- 增加了用户自定义网页代码功能。
+- 增加了管理员添加与删除、管理员用户以及其他管理员功能
+- 一键初始化和运行
+- 可以在Windows和Linux上运行
+- 多进程、高并发
 
 ### 2020年3月17日
 
@@ -479,4 +486,7 @@ yarn build
 #### 2019年4月9日 
 
 1.0 初次发布
+
+```
+
 ```
