@@ -6,19 +6,19 @@
 
 DEMO页面：
 
-![add_notice](E:\code\python\hdu_rank\demo_img\add_notice.png)
+![add_notice](demo_img\add_notice.png)
 
-![admin_index](E:\code\python\hdu_rank\demo_img\admin_index.png)
+![admin_index](demo_img\admin_index.png)
 
-![admin_list](E:\code\python\hdu_rank\demo_img\admin_list.png)
+![admin_list](demo_img\admin_list.png)
 
-![index](E:\code\python\hdu_rank\demo_img\index.jpg)
+![index](demo_img\index.jpg)
 
-![login](E:\code\python\hdu_rank\demo_img\login.png)
+![login](demo_img\login.png)
 
-![register](E:\code\python\hdu_rank\demo_img\register.png)
+![register](demo_img\register.png)
 
-![user_index](E:\code\python\hdu_rank\demo_img\user_index.png)
+![user_index](demo_img\user_index.png)
 
 
 
