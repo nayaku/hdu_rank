@@ -6,19 +6,19 @@
 
 DEMO页面：
 
-![add_notice](/demo_img/add_notice.png)
+![add_notice](demo_img/add_notice.png)
 
-![admin_index](/demo_img/admin_index.png)
+![admin_index](demo_img/admin_index.png)
 
-![admin_list](/demo_img/admin_list.png)
+![admin_list](demo_img/admin_list.png)
 
-![index](/demo_img/index.jpg)
+![index](demo_img/index.jpg)
 
-![login](/demo_img/login.png)
+![login](demo_img/login.png)
 
-![register](/demo_img/register.png)
+![register](demo_img/register.png)
 
-![user_index](/demo_img/user_index.png)
+![user_index](demo_img/user_index.png)
 
 
 
@@ -59,9 +59,9 @@ pip3 install flask pymysql requests flask_cors
 pip3 install -i https://mirrors.ustc.edu.cn/pypi/web/simple/ flask pymysql requests flask_cors
 # 下载项目
 wget https://github.com/736248591/hdu_rank/archive/3.0.0.zip
-tar -zxvf 3.0.0.zip
+unzip 3.0.0.zip
 # 进入项目
-cd hdu_rank
+cd hdu_rank-3.0.0
 # 运行安装助手
 python3 helper.py
 # 启动爬虫进程
@@ -75,6 +75,7 @@ python3 hdu_crawl.py &
 <font color='#CC0033'>注意在windows下tornado无法以多进程运行。</font>
 
 ```shell
+# 注意：编译安装Python前请确安装了libffi-devel，否则这里pip3 install会出错。
 # 安装所需的PIP库
 pip3 install tornado
 # 国内用户可以使用以下命令来替换上面命令
@@ -86,6 +87,7 @@ python3 run_tornado.py
 
 ## 2. 在NGINX下运行
 ```sh
+# 注意：编译安装Python前请确安装了libffi-devel，否则这里pip3 install会出错。
 # 安装所需的PIP库
 pip3 install uWSGI
 # 增加hdurank的用户名和组
@@ -105,14 +107,9 @@ location ~* /api/{
     uwsgi_pass  127.0.0.1:5007;
 }
 # 重启nginx服务器
-lnmp nginx restart
+lnmp nginx reload
 # 开启新的一个screen，这样在关闭终端以后程序不会被关闭
 screen -R hdu_rank
-# 创建管理员密码 
-vim admin.key
-# 修改服务器配置文件
-vim my_setting.py
-USE_STATIC 设置为False
 # 启动uwsgi服务器
 uwsgi --ini uwsgi.ini 
 ```
