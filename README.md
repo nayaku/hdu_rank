@@ -4,8 +4,6 @@
 
 本项目是一款基于基于Flask和BootstrapVue的杭电刷题排行榜前后端分离的网站。
 
-DEMO页面：
-
 ![add_notice](demo_img/add_notice.png)
 
 ![admin_index](demo_img/admin_index.png)
@@ -57,11 +55,10 @@ python3.x	pip3	MySQL8.x
 pip3 install flask pymysql requests flask_cors
 # 国内用户可以使用在pip安装时候添加参数，如：
 pip3 install -i https://mirrors.ustc.edu.cn/pypi/web/simple/ flask pymysql requests flask_cors
-# 下载项目
-wget https://github.com/736248591/hdu_rank/archive/3.0.0.zip
-unzip 3.0.0.zip
+# 克隆项目
+git clone https://github.com/736248591/hdu_rank.git
 # 进入项目
-cd hdu_rank-3.0.0
+cd hdu_rank
 # 运行安装助手
 python3 helper.py
 # 启动爬虫进程
@@ -80,7 +77,7 @@ python3 hdu_crawl.py &
 pip3 install tornado
 # 国内用户可以使用以下命令来替换上面命令
 pip3 install -i https://mirrors.ustc.edu.cn/pypi/web/simple/ tornado
-cd 3.0.0
+cd hdu_rank
 # 启动tornado
 python3 run_tornado.py
 ```
@@ -123,7 +120,27 @@ uwsgi --ini uwsgi.ini
 
 ## 数据库逻辑表
 
- [数据库逻辑表.xlsx](数据库逻辑表.xlsx) 
+| 表名            | 列名          | 说明         | 数据类型                                   | 长度  | 默认值       | 约束      |
+|---------------|-------------|------------|----------------------------------------|-----|-----------|---------|
+| users         | id          | 用户唯一标识     | uint                                   | 10  |           | 主键、自动递增 |
+|               | uid         | 登录账号       | char                                   | 16  |           | 不为空，唯一  |
+|               | pwd         | 密码         | char                                   | 128 |           | 不为空     |
+|               | class\_name | 班级名        | char                                   | 24  |           |         |
+|               | name        | 姓名         | char                                   | 16  |           | 不为空     |
+|               | motto       | 格言         | varchar                                | 255 |           |         |
+|               | account     | 杭电账号       | varchar                                | 64  |           | 不为空     |
+|               | solved\_num | 解决题数       | unit                                   |     |           |         |
+|               | status      | 状态         | "enum 'unchecked','fetching','active'" |     | unchecked |         |
+|               | html        | 自定义页面代码    | longtext                               |     |           |         |
+|               |             |            |                                        |     |           |         |
+| admins        | id          | 管理员唯一标识    | uint                                   | 10  |           | 主键、自动递增 |
+|               | uid         | 管理员登录账号    | char                                   | 16  |           | 不为空，唯一  |
+|               | is\_super   | 是否可以管理其他用户 | tinyint                                | 1   | FALSE     | 不为空     |
+|               | pwd         | 密码         | char                                   | 128 |           | 不为空     |
+|               |             |            |                                        |     |           |         |
+| server\_infos | id          |            | uint                                   |     |           | 主键、自动递增 |
+|               | notice      | 公告         | longtext                               |     |           |         |
+
 
 
 
