@@ -2,7 +2,7 @@
 
 # 说明
 
-本项目是一款基于基于Flask和BootstrapVue的杭电刷题排行榜前后端分离的网站。
+本项目是一款基于Flask和BootstrapVue的杭电刷题排行榜前后端分离的网站。
 
 ![add_notice](demo_img/add_notice.png)
 
