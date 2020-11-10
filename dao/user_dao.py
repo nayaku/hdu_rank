@@ -137,7 +137,7 @@ def get_rank() -> Tuple[tuple]:
     :return:
     """
     sql = '''SELECT users.id, users.uid, users.pwd, users.class_name, users.`name`, users.motto,users.account, \
-    users.solved_num, users.`status`, users.html FROM users'''
+    users.solved_num, users.`status`, users.html FROM users ORDER BY users.solved_num DESC'''
     connect = get_connect()
     with connect.cursor(cursor=pymysql.cursors.DictCursor) as cursor:
         cursor.execute(sql)

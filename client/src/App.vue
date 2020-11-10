@@ -886,6 +886,7 @@
           {
             key: 'solved_num',
             label: '题数',
+            sortable: true,
             thClass: 'rank-td',
             tdClass: 'rank-td'
           }

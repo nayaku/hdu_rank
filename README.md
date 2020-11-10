@@ -1,4 +1,4 @@
-![2206ea38a8b6b275b9d169efbc2d35b4_vue-markdown_style=flat](2206ea38a8b6b275b9d169efbc2d35b4_vue-markdown_style=flat.svg)
+[![MIT](https://img.shields.io/github/license/736248591/TSF-TypeLib)](LICENSE)
 
 # 说明
 
@@ -415,6 +415,10 @@ yarn build
 ```
 
 ## 更新日记
+
+### 2020年11月10日
+
+修正题数未从高到底排序的BUG。
 
 ### 2020年11月8日
 
