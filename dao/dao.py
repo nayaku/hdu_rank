@@ -9,9 +9,7 @@ def get_connect() -> Connection:
     global _connect
 
     if not _connect:
-        _connect = connect(DB_ADDR, DB_USER, DB_PASSWORD, DB_NAME)
+        _connect = connect(host=DB_ADDR, user=DB_USER, passwd=DB_PASSWORD, database=DB_NAME)
     # 掉线重连
     _connect.ping(reconnect=True)
     return _connect
-
-
